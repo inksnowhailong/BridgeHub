@@ -54,3 +54,33 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# 忽略 PostgreSQL 的日志文件和 WAL（事务日志）
+dockerServer/pg_data/pg_wal/
+dockerServer/pg_data/pg_stat/
+dockerServer/pg_data/pg_log/
+
+# 忽略临时文件
+dockerServer/pg_data/postgresql.auto.conf
+dockerServer/pg_data/postmaster.pid
+dockerServer/pg_data/postmaster.opts
+
+# 忽略 PostgreSQL 内部事务文件
+dockerServer/pg_data/pg_commit_ts/
+dockerServer/pg_data/pg_dynshmem/
+dockerServer/pg_data/pg_notify/
+dockerServer/pg_data/pg_replslot/
+dockerServer/pg_data/pg_serial/
+dockerServer/pg_data/pg_snapshots/
+dockerServer/pg_data/pg_subtrans/
+dockerServer/pg_data/pg_twophase/
+dockerServer/pg_data/pg_xact/
+
+# 忽略表空间目录（如果未使用自定义表空间）
+dockerServer/pg_data/pg_tblspc/
+
+# 保留数据库数据，避免忽略重要目录
+!dockerServer/pg_data/base/
+!dockerServer/pg_data/global/
+!dockerServer/pg_data/pg_hba.conf
+!dockerServer/pg_data/postgresql.conf

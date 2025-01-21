@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: bridgehub_db_pg
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=hubcenter
+      - POSTGRES_DB=bridgehub_db
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: always
