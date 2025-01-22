@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { PublisherService } from './publisher.service';
 
 @Controller('publisher')
@@ -8,5 +8,9 @@ export class PublisherController {
   @Get('list')
   async getPublisherList(): Promise<any[]> {
     return this.publisherService.getPublisherList();
+  }
+  @Post('create')
+  async createPublisher(): Promise<any> {
+    return this.publisherService.createPublisher();
   }
 }

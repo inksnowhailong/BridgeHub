@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm';
+import * as path from 'path';
 
 export const databaseProviders = [
   {
@@ -10,8 +11,7 @@ export const databaseProviders = [
         port: 5432,
         username: 'root',
         password: 'hubcenter',
-        database: 'bridgehub_db',
-        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+        entities: [path.resolve(__dirname, '../../**/*.entity{.ts,.js}')],
         synchronize: true
       });
       return dataSource.initialize();

@@ -6,4 +6,7 @@ export class PublisherService {
   getPublisherList(): any[] {
     return [];
   }
+  createPublisher(): any {
+    return {};
+  }
 }

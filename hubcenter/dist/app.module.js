@@ -10,7 +10,7 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
-const publisher_module_1 = require("./publisher/publisher.module");
+const publisher_module_1 = require("./infrastructure/publisher/publisher.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
