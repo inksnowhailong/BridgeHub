@@ -26,6 +26,6 @@ describe('publisher (e2e)', () => {
         serverType: 'node',
         customData: '{}'
       }) // Add body data here
-      .expect(200);
+      .expect(201);
   });
 });

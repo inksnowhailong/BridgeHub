@@ -28,11 +28,9 @@ export class PublisherService extends PublisherRepositoryPgsql {
     });
     try {
       const newPublisher = await this.createPublisher(publisherE);
-      console.log(newPublisher);
-
       return newPublisher;
     } catch (error) {
-      console.log(error);
+      return error;
     }
   }
 }

@@ -3,10 +3,11 @@ import { AsyncBase } from "../common/abstract/AsyncBase";
 export class PublisherApi extends AsyncBase {
   private BASE_URL = "/publisher";
 
-  testHello() {
-    return this.request({
-      url: this.BASE_URL + "/list",
-      method: "GET",
-    });
+ createPublisher = async (params: any) => {
+    return await this.request({
+      url: `${this.BASE_URL}/create`,
+      method: "POST",
+      data: params,
+    })
   }
 }
