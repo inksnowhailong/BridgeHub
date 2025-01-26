@@ -3,6 +3,7 @@ import {
   PublisherUpdateParamsDTO
 } from '../dto/publisher.dto';
 import { PublisherEntity } from '../entities/publisher.entity';
+import { PaginationParams, PaginationResult } from '../dto/Pagination';
 
 export abstract class PublisherRepository {
   /**
@@ -31,12 +32,17 @@ export abstract class PublisherRepository {
    * @return {*}
    */
   abstract getPublisherByServerName(
-    serverName: string
-  ): Promise<PublisherEntity[]>;
+    serverName: string,
+    pageParams: PaginationParams
+  ): Promise<PaginationResult<PublisherEntity[]>>;
 
   /**
    * @description: 获取所有发布者
    * @return {*}
    */
   abstract getAllPublisher(): Promise<PublisherEntity[]>;
+
+  abstract getListByPage(
+    pageParams: PaginationParams
+  ): Promise<PaginationResult<PublisherEntity[]>>;
 }

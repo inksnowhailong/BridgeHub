@@ -33,4 +33,8 @@ export class PublisherService extends PublisherRepositoryPgsql {
       return error;
     }
   }
+
+  async getPublisherList(PaginationParams): Promise<PublisherEntity[]> {
+    return this.getAllPublisher();
+  }
 }

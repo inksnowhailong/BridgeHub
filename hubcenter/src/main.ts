@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './framework/app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { RequestInterceptor } from './usecase/Interceptor/Request.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,7 @@ async function bootstrap() {
       whitelist: true
     })
   );
+  app.useGlobalInterceptors(new RequestInterceptor());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
