@@ -7,7 +7,7 @@ import {
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PublisherModule } from '../infrastructure/publisher/publisher.module';
-import { AuthMiddleware } from 'src/usecase/middleware/authMiddleware';
+import { AuthMiddleware } from 'src/framework/middleware/authMiddleware';
 import { PublisherController } from 'src/infrastructure/publisher/publisher.controller';
 
 @Module({

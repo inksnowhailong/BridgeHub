@@ -4,7 +4,7 @@ import {
   Pagination,
   PaginationParams,
   PaginationResult
-} from 'src/domain/dto/Pagination';
+} from 'src/domain/dto/Pagination.dto';
 import { Repository } from 'typeorm';
 
 export class PublisherRepositoryPgsql extends PublisherRepository {

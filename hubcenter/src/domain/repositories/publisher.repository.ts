@@ -3,7 +3,7 @@ import {
   PublisherUpdateParamsDTO
 } from '../dto/publisher.dto';
 import { PublisherEntity } from '../entities/publisher.entity';
-import { PaginationParams, PaginationResult } from '../dto/Pagination';
+import { PaginationParams, PaginationResult } from '../dto/Pagination.dto';
 
 export abstract class PublisherRepository {
   /**

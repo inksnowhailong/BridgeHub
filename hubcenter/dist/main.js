@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@nestjs/core");
 const app_module_1 = require("./framework/app.module");
 const common_1 = require("@nestjs/common");
-const Request_interceptor_1 = require("./usecase/Interceptor/Request.interceptor");
+const Request_interceptor_1 = require("./framework/Interceptor/Request.interceptor");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
