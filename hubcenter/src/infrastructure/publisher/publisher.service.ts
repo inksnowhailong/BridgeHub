@@ -3,6 +3,7 @@ import { PublisherCreateParamsDTO } from 'src/domain/dto/publisher.dto';
 import { PublisherEntity } from 'src/domain/entities/publisher.entity';
 import { PublisherStatus } from 'src/domain/enum/publisher.enum';
 import { PublisherRepositoryPgsql } from 'src/usecase/repositories/publisher.repositoryImp';
+import { PayloadType } from 'src/usecase/response/ResponseFactiry';
 import { DataSource } from 'typeorm';
 
 /**
@@ -30,7 +31,7 @@ export class PublisherService extends PublisherRepositoryPgsql {
       const newPublisher = await this.createPublisher(publisherE);
       return newPublisher;
     } catch (error) {
-      return error;
+      throw new PayloadType(500, { data: error });
     }
   }
 

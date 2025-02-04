@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseInterceptors } from '@nestjs/common';
 import { PublisherService } from './publisher.service';
 import { PublisherCreateParamsDTO } from 'src/domain/dto/publisher.dto';
 
