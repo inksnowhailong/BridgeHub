@@ -118,7 +118,7 @@ class serverErrorResponse extends ResponseProduct {
  * @return {*}
  */
 export class ResponseFactiry {
-  public createResponse(payload: any | ResponseDTO): ResponseDTO {
+  public createResponse(payload: PayloadType | ResponseDTO): ResponseDTO {
     if (payload instanceof ResponseDTO) {
       return payload;
     }
