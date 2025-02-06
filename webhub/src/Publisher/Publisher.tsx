@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PublisherApi } from "./api";
 import request from "@/utils/request";
 import { Table, TableProps, Tag } from "antd";
@@ -13,32 +13,34 @@ export default function Publisher() {
     pageSize: 10,
     currentPage: 1,
   });
+  const [total, setTotal] = useState(0);
 
   const columns: TableProps<PublisherEntity>["columns"] = [
     {
       title: "服务的名字",
       dataIndex: "serverName",
-      key: "serverName",
-      render: (text) => <a>{text}</a>,
     },
     {
       title: "服务的git",
       dataIndex: "gitUrl",
-      key: "gitUrl",
+      render: (text) => (
+        <a target="_blank" href={text}>
+          {text}
+        </a>
+      ),
     },
     {
       title: "服务创建时间",
       dataIndex: "createdAt",
-      key: "createdAt",
+      render: (text) => new Date(Number(text)).toLocaleString(),
     },
     {
       title: "上一次启动时间",
       dataIndex: "lastStartedAt",
-      key: "lastStartedAt",
+      render: (text) => new Date(Number(text)).toLocaleString(),
     },
     {
       title: "服务的状态",
-      key: "status",
       dataIndex: "status",
       render: (_, { status }) => (
         <>
@@ -47,11 +49,17 @@ export default function Publisher() {
               {
                 active: "green",
                 disable: "red",
-                close: "default",
+                close: "blue",
               }[status] || "blue"
             }
           >
-            {status}
+            {
+              {
+                active: "启用",
+                disable: "禁用",
+                close: "关闭",
+              }[status]
+            }
           </Tag>
         </>
       ),
@@ -80,14 +88,35 @@ export default function Publisher() {
   };
   const getPublisherList = async () => {
     const res = await Api.getPublisherList(pageParams);
-    console.log('res :>> ', res);
-    // setData(res.data.data);
-  }
-  getPublisherList();
+    console.log("res :>> ", res);
+    setData(res.data.data);
+    setTotal(res.data.Pagination.totalCount);
+  };
+  useEffect(() => {
+    getPublisherList();
+  }, [pageParams]);
   return (
     <>
       <button onClick={createPublisher}>createPublisher</button>
-      <Table<PublisherEntity> columns={columns} dataSource={data}></Table>
+      <Table<PublisherEntity>
+        rowKey={(record) => record.id}
+        columns={columns}
+        dataSource={data}
+        pagination={{
+          total,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `共 ${total} 条`,
+          current: pageParams.currentPage,
+          pageSize: pageParams.pageSize,
+          onChange: (currentPage, pageSize) => {
+            setPageParams({
+              currentPage,
+              pageSize,
+            });
+          },
+        }}
+      ></Table>
     </>
   );
 }
