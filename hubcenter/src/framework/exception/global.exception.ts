@@ -11,9 +11,18 @@ export class AllExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     // const request = ctx.getRequest<Request>();
-    console.log('exception :>> ', exception);
+    // console.log('exception :>> ', exception);
     const { code, error, message, detail } =
       this.exceptionParser.parseError(exception);
-    response.status(code).json(new ResponseDTO(code, message, error));
+
+    response
+      .status(code)
+      .json(
+        new ResponseDTO(
+          code,
+          message,
+          process.env.NODE_ENV === 'production' ? {} : error
+        )
+      );
   }
 }

@@ -29,7 +29,6 @@ export class RequestInterceptor implements NestInterceptor {
         return reponse.createResponse(new PayloadType(status, data));
       }),
       catchError((error) => {
-        // console.log('error :>> ', error);
         // 错误处理逻辑
         // 使用 ResponseFactory 来创建错误响应
         return throwError(() => error);
