@@ -16,7 +16,7 @@ async function bootstrap() {
         optionsSuccessStatus: 204
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
-        whitelist: true
+        transform: true
     }));
     app.useGlobalInterceptors(new Request_interceptor_1.RequestInterceptor());
     const nestException = new nest_exception_1.NestException();
