@@ -1,4 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
+import {
+  PaginationParams,
+  PaginationResult
+} from 'src/domain/dto/Pagination.dto';
 import { PublisherCreateParamsDTO } from 'src/domain/dto/publisher.dto';
 import { PublisherEntity } from 'src/domain/entities/publisher.entity';
 import { PublisherStatus } from 'src/domain/enum/publisher.enum';
@@ -34,7 +38,9 @@ export class PublisherService extends PublisherRepositoryPgsql {
     // }
   }
 
-  async getPublisherList(PaginationParams): Promise<PublisherEntity[]> {
-    return this.getAllPublisher();
+  async getPublisherList(
+    pageParams: PaginationParams
+  ): Promise<PaginationResult<PublisherEntity[]>> {
+    return await this.getListByPage(pageParams);
   }
 }

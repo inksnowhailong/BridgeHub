@@ -5,6 +5,7 @@ export interface RequestOptions<T> {
   url: string;
   method?: HttpMethod;
   data?: T;
+  params?: Record<string, any>;
   header?: Record<string, string>;
   showLoading?: boolean;
 }

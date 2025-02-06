@@ -13,7 +13,7 @@ export const enum PublishDataType {
  */
 export const enum PublisherStatus {
   /**正常 */
-  ACTIVE = 'normal',
+  ACTIVE = 'active',
   /**禁用 */
   DISABLE = 'disable',
   /**关闭 */

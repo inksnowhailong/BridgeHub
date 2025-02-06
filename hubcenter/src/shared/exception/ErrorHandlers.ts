@@ -34,6 +34,7 @@ export class TypeormExceptionErrorHandler extends BaseErrorHandler {
   transeformError(error: Error, result: IException<any>): IException<any> {
     if (error instanceof TypeORMError) {
       const code = (error as any).code;
+      console.log('code :>> ', code);
       const { status, message } = this.codeToMessage(code);
       result = {
         error,

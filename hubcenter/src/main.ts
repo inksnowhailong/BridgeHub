@@ -20,7 +20,8 @@ async function bootstrap() {
   });
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true
+      // whitelist: true,
+      transform: true
     })
   );
   app.useGlobalInterceptors(new RequestInterceptor());

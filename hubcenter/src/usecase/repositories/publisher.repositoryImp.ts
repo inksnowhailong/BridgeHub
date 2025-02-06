@@ -38,16 +38,12 @@ export class PublisherRepositoryPgsql extends PublisherRepository {
   ): Promise<PaginationResult<PublisherEntity[]>> {
     const { pageSize, currentPage } = pageParams;
 
-    try {
-      const [datas, total] = await this.repository.findAndCount({
-        skip: (currentPage - 1) * pageSize,
-        take: pageSize
-      });
-      // 创建分页数据
-      const pageData = new Pagination(total, pageSize, currentPage);
-      return pageData.createPaginationResult(datas);
-    } catch (error) {
-      return error;
-    }
+    const [datas, total] = await this.repository.findAndCount({
+      skip: (currentPage - 1) * pageSize,
+      take: pageSize
+    });
+    // 创建分页数据
+    const pageData = new Pagination(total, pageSize, currentPage);
+    return pageData.createPaginationResult(datas);
   }
 }

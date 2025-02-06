@@ -10,10 +10,9 @@ export class AllExceptionFilter implements ExceptionFilter {
   catch(exception: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    // const request = ctx.getRequest<Request>();
-    // console.log('exception :>> ', exception);
     const { code, error, message, detail } =
       this.exceptionParser.parseError(exception);
+    console.log(error);
 
     response
       .status(code)
