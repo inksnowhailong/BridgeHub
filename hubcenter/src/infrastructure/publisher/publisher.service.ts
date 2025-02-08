@@ -3,7 +3,10 @@ import {
   PaginationParams,
   PaginationResult
 } from 'src/domain/dto/Pagination.dto';
-import { PublisherCreateParamsDTO } from 'src/domain/dto/publisher.dto';
+import {
+  PublisherCreateParamsDTO,
+  PublisherUpdateStatusDTO
+} from 'src/domain/dto/publisher.dto';
 import { PublisherEntity } from 'src/domain/entities/publisher.entity';
 import { PublisherStatus } from 'src/domain/enum/publisher.enum';
 import { PublisherRepositoryPgsql } from 'src/usecase/repositories/publisher.repositoryImp';
@@ -42,5 +45,18 @@ export class PublisherService extends PublisherRepositoryPgsql {
     pageParams: PaginationParams
   ): Promise<PaginationResult<PublisherEntity[]>> {
     return await this.getListByPage(pageParams);
+  }
+  // async getPublisherById(id: string): Promise<PublisherEntity> {
+  //   return await this.getPublisherById(id);
+  // }
+  // async updatePublisher(publiser: PublisherEntity): Promise<PublisherEntity> {
+  //   return await this.updatePublisher(publiser);
+  // }
+  async updatePublisherStatus(
+    params: PublisherUpdateStatusDTO
+  ): Promise<PublisherEntity> {
+    const publisher = await this.getPublisherById(params.id);
+    publisher.status = params.status;
+    return await this.updatePublisher(publisher);
   }
 }

@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { PublisherApi } from "./api";
 import request from "@/utils/request";
-import { Table, TableProps, Tag } from "antd";
-import { PublisherEntity } from "./entities";
+import { Space, Switch, Table, TableProps, Tag } from "antd";
+import { PublisherEntity, PublisherStatus } from "./entities";
 import { PaginationParams } from "@/common/abstract/Pagination.dto";
 
 export default function Publisher() {
   const Api = new PublisherApi(request);
 
   const [data, setData] = useState<PublisherEntity[]>([]);
+  const [loading, setLoading] = useState<string[]>([]);
   const [pageParams, setPageParams] = useState<PaginationParams>({
     pageSize: 10,
     currentPage: 1,
@@ -42,8 +43,15 @@ export default function Publisher() {
     {
       title: "服务的状态",
       dataIndex: "status",
-      render: (_, { status }) => (
-        <>
+      render: (_, { id, status }) => (
+        <Space>
+          <Switch
+            checkedChildren="开启"
+            unCheckedChildren="关闭"
+            checked={status !== PublisherStatus.DISABLE}
+            onChange={() => updatePublisherStatus(id, status)}
+            loading={loading.includes(id)}
+          />
           <Tag
             color={
               {
@@ -61,20 +69,16 @@ export default function Publisher() {
               }[status]
             }
           </Tag>
-        </>
+        </Space>
       ),
     },
-    // {
-    //   title: 'Action',
-    //   key: 'action',
-    //   render: (_, record) => (
-    //     <Space size="middle">
-    //       <a>Invite {record.name}</a>
-    //       <a>Delete</a>
-    //     </Space>
-    //   ),
-    // },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => <Space size="middle"></Space>,
+    },
   ];
+
   const createPublisher = async () => {
     const res = await Api.createPublisher({
       serverName: "测试发布者",
@@ -91,6 +95,18 @@ export default function Publisher() {
     console.log("res :>> ", res);
     setData(res.data.data);
     setTotal(res.data.Pagination.totalCount);
+  };
+  const updatePublisherStatus = async (id: string, status: PublisherStatus) => {
+    setLoading((loading) => [...loading, id]);
+    const res = await Api.updatePublisherStatus({
+      id,
+      status:
+        status === PublisherStatus.DISABLE
+          ? PublisherStatus.CLOSE
+          : PublisherStatus.DISABLE,
+    });
+    setLoading((loading) => loading.filter((item) => item !== id));
+    getPublisherList();
   };
   useEffect(() => {
     getPublisherList();

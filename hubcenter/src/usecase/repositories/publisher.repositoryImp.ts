@@ -5,7 +5,7 @@ import {
   PaginationParams,
   PaginationResult
 } from 'src/domain/dto/Pagination.dto';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 
 export class PublisherRepositoryPgsql extends PublisherRepository {
   constructor(private readonly repository: Repository<PublisherEntity>) {
@@ -16,18 +16,32 @@ export class PublisherRepositoryPgsql extends PublisherRepository {
   }
 
   async updatePublisher(params: PublisherEntity): Promise<PublisherEntity> {
-    return new PublisherEntity();
+    return this.repository.update(params.id, params).then(() => params);
   }
 
   async getPublisherById(id: string): Promise<PublisherEntity> {
-    return new PublisherEntity();
+    return this.repository.findOne({
+      where: {
+        id
+      }
+    });
   }
-
   async getPublisherByServerName(
     serverName: string,
     pageParams: PaginationParams
   ): Promise<PaginationResult<PublisherEntity[]>> {
-    throw new Error('Method not implemented.');
+    const { pageSize, currentPage } = pageParams;
+
+    const [datas, total] = await this.repository.findAndCount({
+      where: {
+        serverName: Like(`%${serverName}%`)
+      },
+      skip: (currentPage - 1) * pageSize,
+      take: pageSize
+    });
+    // 创建分页数据
+    const pageData = new Pagination(total, pageSize, currentPage);
+    return pageData.createPaginationResult(datas);
   }
 
   async getAllPublisher(): Promise<PublisherEntity[]> {

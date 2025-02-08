@@ -1,6 +1,9 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { PublisherService } from './publisher.service';
-import { PublisherCreateParamsDTO } from 'src/domain/dto/publisher.dto';
+import {
+  PublisherCreateParamsDTO,
+  PublisherUpdateStatusDTO
+} from 'src/domain/dto/publisher.dto';
 import {
   PaginationParams,
   PaginationResult
@@ -29,5 +32,17 @@ export class PublisherController {
     console.log('pageParams :>> ', pageParams);
 
     return this.publisherService.getPublisherList(pageParams);
+  }
+  @Post('update')
+  async updatePublisher(
+    @Body() params: PublisherEntity
+  ): Promise<PublisherEntity> {
+    return this.publisherService.updatePublisher(params);
+  }
+  @Post('updateStatus')
+  async updatePublisherStatus(
+    @Body() params: PublisherUpdateStatusDTO
+  ): Promise<PublisherEntity> {
+    return this.publisherService.updatePublisherStatus(params);
   }
 }

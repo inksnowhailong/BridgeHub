@@ -27,4 +27,19 @@ export class PublisherApi extends AsyncBase {
       params,
     });
   };
+  updatePublisherStatus = async <
+    T extends {
+      id: string;
+      status: string;
+    },
+    R extends PublisherEntity
+  >(
+    data: T
+  ) => {
+    return await this.request<T, R>({
+      url: `${this.BASE_URL}/updateStatus`,
+      method: "POST",
+      data,
+    });
+  };
 }

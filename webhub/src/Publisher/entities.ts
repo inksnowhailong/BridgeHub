@@ -25,7 +25,7 @@ export interface PublisherEntity {
  * @description: 发布者的状态
  * @return {*}
  */
-export const enum PublisherStatus {
+export  enum PublisherStatus {
   /**正常 */
   ACTIVE = "active",
   /**禁用 */
