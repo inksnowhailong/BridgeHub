@@ -1,0 +1,23 @@
+{
+  "name": "hub-publisher-cli",
+  "version": "1.0.0",
+  "description": "发布者",
+  "main": "src/index.ts",
+  "bin": {
+    "hp": "./dist/index.js"
+  },
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "inksnowhailong",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^22.13.1",
+    "commander": "^13.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}
