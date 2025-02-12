@@ -1,11 +1,21 @@
 import { Command } from "commander";
 
 export class commandOption {
+  command: Command | null = null;
+
   constructor(
     public name: string,
-    public description: string,
-    public option: string,
-    public action:  (this: Command, ...args: any[]) => void | Promise<void>
+    public description?:
+      | [str: string, argsDescription: Record<string, string>]
+      | string,
+    public option?:
+      | [
+          flags: string,
+          description?: string,
+          defaultValue?: string | boolean | string[]
+        ]
+      | string,
+    public action?: (this: Command, ...args: any[]) => void | Promise<void>
   ) {}
 }
 
@@ -14,13 +24,21 @@ export class commandCreater {
   createCommand(comand: commandOption) {
     const cmd = this.program.command(comand.name);
     if (comand.description) {
-        cmd.description(comand.description);
+      if (typeof comand.description === "string") {
+        cmd.description(comand.description as string);
+      } else {
+        cmd.description(...comand.description);
+      }
     }
     if (comand.option) {
-        cmd.option(comand.option);
+      if (typeof comand.option === "string") {
+        cmd.option(comand.option as string);
+      } else {
+        cmd.option(...comand.option);
+      }
     }
     if (comand.action) {
-        cmd.action(comand.action);
+      cmd.action(comand.action);
     }
   }
 }

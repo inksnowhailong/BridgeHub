@@ -5,6 +5,7 @@ import {
 } from 'src/domain/dto/Pagination.dto';
 import {
   PublisherCreateParamsDTO,
+  PublisherStartDTO,
   PublisherUpdateStatusDTO
 } from 'src/domain/dto/publisher.dto';
 import { PublisherEntity } from 'src/domain/entities/publisher.entity';
@@ -58,5 +59,16 @@ export class PublisherService extends PublisherRepositoryPgsql {
     const publisher = await this.getPublisherById(params.id);
     publisher.status = params.status;
     return await this.updatePublisher(publisher);
+  }
+
+  /**
+   * @description: 启动与某个服务的发布者的链接
+   * @param {string} serverName
+   * @return {*}
+   */
+  async startPublisher(server: PublisherStartDTO) {
+    const publisher = await this.getPublisherByDeviceId(server.deviceId);
+    if (publisher) {
+    }
   }
 }

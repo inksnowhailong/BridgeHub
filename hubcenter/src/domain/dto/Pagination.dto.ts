@@ -62,17 +62,16 @@ export class Pagination {
 
 export class PaginationParams {
   /**每页数据量 */
-  // @IsNumber()
   @Min(1)
   @IsInt()
-  @Transform(({ value }) => Number(value))
-  pageSize: number;
+  @Transform(({ value }) => Number(value ?? 10))
+  pageSize: number = 10;
+
   /**当前页码 */
-  // @IsNumber()
   @Min(1)
   @IsInt()
-  @Transform(({ value }) => Number(value))
-  currentPage: number;
+  @Transform(({ value }) => Number(value ?? 1))
+  currentPage: number = 1;
 }
 /**
  * @description:数据转为包含分页数据的工具类型
@@ -83,8 +82,3 @@ export type PaginationResult<T> = {
   Pagination: Pagination;
   data: T;
 };
-function Type(
-  arg0: () => NumberConstructor
-): (target: PaginationParams, propertyKey: 'pageSize') => void {
-  throw new Error('Function not implemented.');
-}

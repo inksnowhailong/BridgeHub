@@ -60,4 +60,11 @@ export class PublisherRepositoryPgsql extends PublisherRepository {
     const pageData = new Pagination(total, pageSize, currentPage);
     return pageData.createPaginationResult(datas);
   }
+  async getPublisherByDeviceId(deviceId: string): Promise<PublisherEntity> {
+    return this.repository.findOne({
+      where: {
+        deviceId
+      }
+    });
+  }
 }

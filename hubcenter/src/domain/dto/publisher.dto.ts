@@ -80,3 +80,19 @@ export class PublisherUpdateStatusDTO {
   })
   status: PublisherStatus.DISABLE | PublisherStatus.CLOSE;
 }
+
+/**
+ * @description: 服务启动的参数
+ * @return {*}
+ */
+export class PublisherStartDTO {
+  /**服务的名字 */
+  @IsNotEmpty()
+  serverName: string;
+  /**身份验证信息 */
+  @IsNotEmpty()
+  authData: string;
+  /**设备识别码 */
+  @IsNotEmpty()
+  deviceId: string;
+}

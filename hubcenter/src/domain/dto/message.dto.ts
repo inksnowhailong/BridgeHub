@@ -1,5 +1,5 @@
 import { MessageType, SendType } from '../enum/message.enum';
-import { PublisherCreateParamsDTO } from './publisher.dto';
+import { PublisherCreateParamsDTO, PublisherStartDTO } from './publisher.dto';
 
 /**接收消息*/
 export type MessageDTO = MessageBase<MessageType, MessageDataDTO>;
@@ -25,6 +25,7 @@ export class MessageBase<T extends string, D extends Record<T, any>> {
 /**消息数据 处理的类型映射*/
 export interface MessageDataDTO {
   [MessageType.PUBLISHER_CREATE]: PublisherCreateParamsDTO;
+  [MessageType.PUBLISHER_START]: PublisherStartDTO;
 }
 /**发送消息的数据处理类型映射 */
 export interface SendDataDTO {

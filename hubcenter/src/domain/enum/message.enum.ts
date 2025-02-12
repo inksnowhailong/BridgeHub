@@ -3,6 +3,7 @@
  * @return {*}
  */
 export enum MessageType {
+  PUBLISHER_START = 'PUBLISHER_START',
   PUBLISHER_CREATE = 'PUBLISHER_CREATE'
 }
 

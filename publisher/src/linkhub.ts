@@ -5,10 +5,8 @@ import { io } from "socket.io-client";
 export const linkHub = new commandOption(
   "linkhub",
   "链接服务中心",
-  "-h,--host <host>",
+  ['-h,--host <host>', '链接服务中心'],
   async (options) => {
-    console.log(options);
-
     if (!options.host) {
       const { host } = await inquirer.prompt([
         {
