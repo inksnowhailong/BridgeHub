@@ -34,8 +34,10 @@ export class PublisherService extends PublisherRepositoryPgsql {
       lastStartedAt: Date.now(),
       status: PublisherStatus.CLOSE
     });
+    console.log(' publisherE:>> ', publisherE);
     // try {
     const newPublisher = await this.createPublisher(publisherE);
+    // console.log('newPublisher :>> ', newPublisher);
     return newPublisher;
     // } catch (error) {
     //   throw new PayloadType(500, { data: error });

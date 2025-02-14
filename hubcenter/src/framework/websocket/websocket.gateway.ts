@@ -103,10 +103,12 @@ export class WsGateway
     message: T,
     clientFindKey: string
   ): any {
+    console.log(message.messageType);
+
     switch (message.messageType) {
       case MessageType.PUBLISHER_CREATE:
         const data = message.data;
-        this.publisherService.startPublisher(
+        this.publisherService.addPublisher(
           data as MessageDataDTO[MessageType.PUBLISHER_CREATE]
         );
         this.clientMapByName.set(
