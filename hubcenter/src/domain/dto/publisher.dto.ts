@@ -1,4 +1,4 @@
-import { IsNotEmpty, Matches } from 'class-validator';
+import { IsEnum, IsNotEmpty, Matches } from 'class-validator';
 import { PublisherStatus } from '../enum/publisher.enum';
 
 /**
@@ -63,4 +63,36 @@ export class PublisherUpdateParamsDTO {
   @IsNotEmpty()
   /**服务的状态 */
   status: PublisherStatus;
+}
+
+/**
+ * @description: 修改状态
+ * @return {*}
+ */
+export class PublisherUpdateStatusDTO {
+  /**服务的主键 */
+  @IsNotEmpty()
+  id: string;
+  /**服务的状态 */
+  @IsNotEmpty()
+  @IsEnum(PublisherStatus, {
+    message: 'status 必须是一个合法的状态'
+  })
+  status: PublisherStatus.DISABLE | PublisherStatus.CLOSE;
+}
+
+/**
+ * @description: 服务启动的参数
+ * @return {*}
+ */
+export class PublisherStartDTO {
+  /**服务的名字 */
+  @IsNotEmpty()
+  serverName: string;
+  /**身份验证信息 */
+  @IsNotEmpty()
+  authData: string;
+  /**设备识别码 */
+  @IsNotEmpty()
+  deviceId: string;
 }

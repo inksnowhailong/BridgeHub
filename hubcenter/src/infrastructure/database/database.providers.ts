@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 
 export const databaseProviders = [
+  /**每次还要启动，很麻烦，先用sqlite了 */
   {
     provide: 'PGSQL_DATA_SOURCE',
     useFactory: async () => {
@@ -17,4 +18,16 @@ export const databaseProviders = [
       return dataSource.initialize();
     }
   }
+  // {
+  //   provide: 'SQLITE_DATA_SOURCE',
+  //   useFactory: async () => {
+  //     const dataSource = new DataSource({
+  //       type: 'sqlite',
+  //       database: 'hubcenter.db',
+  //       entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
+  //       synchronize: true
+  //     });
+  //     return dataSource.initialize();
+  //   }
+  // }
 ];

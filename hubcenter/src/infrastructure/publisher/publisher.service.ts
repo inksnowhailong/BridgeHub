@@ -1,9 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PublisherCreateParamsDTO } from 'src/domain/dto/publisher.dto';
+import {
+  PaginationParams,
+  PaginationResult
+} from 'src/domain/dto/Pagination.dto';
+import {
+  PublisherCreateParamsDTO,
+  PublisherStartDTO,
+  PublisherUpdateStatusDTO
+} from 'src/domain/dto/publisher.dto';
 import { PublisherEntity } from 'src/domain/entities/publisher.entity';
 import { PublisherStatus } from 'src/domain/enum/publisher.enum';
 import { PublisherRepositoryPgsql } from 'src/usecase/repositories/publisher.repositoryImp';
-import { PayloadType } from 'src/usecase/response/ResponseFactiry';
 import { DataSource } from 'typeorm';
 
 /**
@@ -27,15 +34,43 @@ export class PublisherService extends PublisherRepositoryPgsql {
       lastStartedAt: Date.now(),
       status: PublisherStatus.CLOSE
     });
-    try {
-      const newPublisher = await this.createPublisher(publisherE);
-      return newPublisher;
-    } catch (error) {
-      throw new PayloadType(500, { data: error });
-    }
+    console.log(' publisherE:>> ', publisherE);
+    // try {
+    const newPublisher = await this.createPublisher(publisherE);
+    // console.log('newPublisher :>> ', newPublisher);
+    return newPublisher;
+    // } catch (error) {
+    //   throw new PayloadType(500, { data: error });
+    // }
   }
 
-  async getPublisherList(PaginationParams): Promise<PublisherEntity[]> {
-    return this.getAllPublisher();
+  async getPublisherList(
+    pageParams: PaginationParams
+  ): Promise<PaginationResult<PublisherEntity[]>> {
+    return await this.getListByPage(pageParams);
+  }
+  // async getPublisherById(id: string): Promise<PublisherEntity> {
+  //   return await this.getPublisherById(id);
+  // }
+  // async updatePublisher(publiser: PublisherEntity): Promise<PublisherEntity> {
+  //   return await this.updatePublisher(publiser);
+  // }
+  async updatePublisherStatus(
+    params: PublisherUpdateStatusDTO
+  ): Promise<PublisherEntity> {
+    const publisher = await this.getPublisherById(params.id);
+    publisher.status = params.status;
+    return await this.updatePublisher(publisher);
+  }
+
+  /**
+   * @description: 启动与某个服务的发布者的链接
+   * @param {string} serverName
+   * @return {*}
+   */
+  async startPublisher(server: PublisherStartDTO) {
+    const publisher = await this.getPublisherByDeviceId(server.deviceId);
+    if (publisher) {
+    }
   }
 }

@@ -6,9 +6,6 @@
  * @description: 分页信息类，封装分页逻辑
  */
 
-import { Transform } from 'class-transformer';
-import { IsInt, Min } from 'class-validator';
-
 export class Pagination {
   /**总数据量 */
   totalCount: number;
@@ -60,19 +57,7 @@ export class Pagination {
  * @return {*}
  */
 
-export class PaginationParams {
-  /**每页数据量 */
-  @Min(1)
-  @IsInt()
-  @Transform(({ value }) => Number(value ?? 10))
-  pageSize: number = 10;
-
-  /**当前页码 */
-  @Min(1)
-  @IsInt()
-  @Transform(({ value }) => Number(value ?? 1))
-  currentPage: number = 1;
-}
+export type PaginationParams = Pick<Pagination, 'pageSize' | 'currentPage'>;
 /**
  * @description:数据转为包含分页数据的工具类型
  * @return {*}
