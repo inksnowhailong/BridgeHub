@@ -27,17 +27,24 @@ export const linkHub = new commandOption(
       console.log(deviceId);
 
       // 向服务器发送消息
-      // socket.emit("message", {
-      //   messageType: "PUBLISHER_CREATE",
-      //   data: {
-      //     serverName: "nodetest " + new Date().toLocaleDateString(),
-      //     gitUrl: "https://github.com/inksnowhailong/BridgeHub.git",
-      //     authData: "no",
-      //     deviceId: deviceId,
-      //     serverType: "node",
-      //     customData: "{}",
-      //   },
-      // });
+      socket.emit(
+        "message",
+        {
+          messageType: "PUBLISHER_CREATE",
+          data: {
+            serverName: "nodetest " + new Date().toLocaleDateString(),
+            gitUrl: "https://github.com/inksnowhailong/BridgeHub.git",
+            authData: "no",
+            deviceId: deviceId,
+            serverType: "node",
+            customData: "{}",
+          },
+        },
+        (res: any) => {
+          dosomething();
+          console.log('一个轮回',res);
+        }
+      );
     });
     // 监听服务器发来的消息
     socket.on("message", (message) => {
@@ -50,3 +57,8 @@ export const linkHub = new commandOption(
     });
   }
 );
+
+
+function dosomething() {
+  console.log('dosomething');
+}
