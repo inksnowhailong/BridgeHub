@@ -53,16 +53,4 @@ export abstract class MessagePlatform {
     message: T,
     clientFindKey: string
   ): any;
-
-  // 定义一个订阅消息的方法，允许外部订阅特定类型的消息
-  // abstract subscribeToMessage<T extends MessageDTO>(
-  //   type: string,
-  //   callback: Callback<T>
-  // ): void;
-
-  // 如果需要取消订阅
-  // abstract unsubscribeFromMessage<T extends MessageDTO>(
-  //   type: string,
-  //   callback: Callback<T>
-  // ): void;
 }

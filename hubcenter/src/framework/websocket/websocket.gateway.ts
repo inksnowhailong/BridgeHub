@@ -9,7 +9,7 @@ import {
   MessageBody
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UseFilters } from '@nestjs/common';
 import {
   MessageBase,
   MessageDataDTO,
@@ -19,9 +19,25 @@ import {
 } from 'src/domain/dto/message.dto';
 import { SendType, MessageType } from 'src/domain/enum/message.enum';
 import { PublisherService } from 'src/infrastructure/publisher/publisher.service';
+import { ResponseDTO } from 'src/domain/dto/response.dto';
+import { NestException } from 'src/shared/exception/nest.exception';
+import {
+  HttpExceptionErrorHandler,
+  TypeormExceptionErrorHandler,
+  DefaultErrorHandler
+} from 'src/shared/exception/ErrorHandlers';
+import { AllExceptionFilter } from '../exception/global.exception';
+
+const nestException = new NestException();
+// 错误处理器 进行链接
+nestException.LinkErrhandlers([
+  new TypeormExceptionErrorHandler(),
+  new DefaultErrorHandler()
+]);
 
 @Injectable()
 @WebSocketGateway(3080, { namespace: 'publisher' })
+@UseFilters(new AllExceptionFilter(nestException))
 export class WsGateway
   extends MessagePlatform
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -66,6 +82,7 @@ export class WsGateway
   ): Promise<any> {
     this.clientMap.set(client.id, client);
     const res = await this.handleMessageFromClient(data, client.id);
+
     return res;
   }
   /**向特定客户端发送消息 */
@@ -99,23 +116,22 @@ export class WsGateway
    * @description: 接到客户端消息
    * @return {*}
    */
-  handleMessageFromClient<T extends MessageDTO>(
+  async handleMessageFromClient<T extends MessageDTO>(
     message: T,
     clientFindKey: string
-  ): any {
-    console.log(message.messageType);
-
+  ): Promise<any> {
     switch (message.messageType) {
       case MessageType.PUBLISHER_CREATE:
         const data = message.data;
-        this.publisherService.addPublisher(
+        const wtf = await this.publisherService.addPublisher(
           data as MessageDataDTO[MessageType.PUBLISHER_CREATE]
         );
+        console.log('wtf :>> ', wtf);
         this.clientMapByName.set(
           data.serverName,
           this.clientMap.get(clientFindKey)
         );
-        break;
+        return new ResponseDTO(200, '创建成功', {});
 
       default:
         break;
