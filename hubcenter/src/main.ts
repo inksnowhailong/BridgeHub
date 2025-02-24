@@ -27,6 +27,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new RequestInterceptor());
 
   const nestException = new NestException();
+  // 错误处理器 进行链接
   nestException.LinkErrhandlers([
     new HttpExceptionErrorHandler(),
     new TypeormExceptionErrorHandler(),

@@ -79,6 +79,7 @@ export class WsGateway
   ): Promise<any> {
     this.clientMap.set(client.id, client);
     const res = await this.handleMessageFromClient(data, client.id);
+
     return res;
   }
   /**向特定客户端发送消息 */

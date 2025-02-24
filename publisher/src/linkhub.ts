@@ -2,6 +2,7 @@ import { commandOption } from "./commandCreater";
 import inquirer from "inquirer";
 import { io } from "socket.io-client";
 import { getDeviceId } from "./utils/tools";
+import { Websocket } from "./websocket";
 
 export const linkHub = new commandOption(
   "linkhub",
@@ -20,11 +21,8 @@ export const linkHub = new commandOption(
       options.host = host;
     }
     // 在这里添加发布逻辑
-    const socket = io("http://localhost:3080/publisher");
-    // 连接事件
-    socket.on("connect", async () => {
-      const deviceId = await getDeviceId();
-      console.log(deviceId);
+    const socket = new Websocket();
+    const deviceId = await getDeviceId();
 
       // 向服务器发送消息
       socket.emit(
@@ -46,18 +44,6 @@ export const linkHub = new commandOption(
         }
       );
     });
-    // 监听服务器发来的消息
-    socket.on("message", (message) => {
-      console.log("Received message:", message);
-    });
-
-    // 断开连接事件
-    socket.on("disconnect", () => {
-      console.log("Disconnected from the WebSocket server");
-    });
-  }
-);
-
 
 function dosomething() {
   console.log('dosomething');

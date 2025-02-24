@@ -28,13 +28,13 @@ export class PublisherService extends PublisherRepositoryPgsql {
   async addPublisher(
     params: PublisherCreateParamsDTO
   ): Promise<PublisherEntity> {
+    console.log('params :>> ', params);
     const publisherE = new PublisherEntity({
       ...params,
       createdAt: Date.now(),
       lastStartedAt: Date.now(),
       status: PublisherStatus.CLOSE
     });
-    console.log(' publisherE:>> ', publisherE);
     // try {
     const newPublisher = await this.createPublisher(publisherE);
     // console.log('newPublisher :>> ', newPublisher);

@@ -10,7 +10,7 @@ import { QueryFailedError, TypeORMError } from 'typeorm';
  * @return {*}
  */
 export class HttpExceptionErrorHandler extends BaseErrorHandler {
-  transeformError(error: Error, result: IException<any>): IException<any> {
+  transformError(error: Error, result: IException<any>): IException<any> {
     let status, message;
 
     if (error instanceof HttpException) {
@@ -31,10 +31,9 @@ export class HttpExceptionErrorHandler extends BaseErrorHandler {
  * @return {*}
  */
 export class TypeormExceptionErrorHandler extends BaseErrorHandler {
-  transeformError(error: Error, result: IException<any>): IException<any> {
+  transformError(error: Error, result: IException<any>): IException<any> {
     if (error instanceof TypeORMError) {
       const code = (error as any).code;
-      console.log('code :>> ', code);
       const { status, message } = this.codeToMessage(code);
       result = {
         error,
@@ -104,7 +103,7 @@ export class TypeormExceptionErrorHandler extends BaseErrorHandler {
  * @return {*}
  */
 export class DefaultErrorHandler extends BaseErrorHandler {
-  transeformError(error: Error, result: IException<any>): IException<any> {
+  transformError(error: Error, result: IException<any>): IException<any> {
     if (!result.code) {
       const status = HttpStatus.INTERNAL_SERVER_ERROR;
       const message = 'Internal Server Error';
