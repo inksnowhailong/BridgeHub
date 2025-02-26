@@ -4,15 +4,21 @@ import { ResponseDTO } from 'src/domain/dto/response.dto';
 import { ExceptionParser } from 'src/domain/exception/base.exception';
 
 @Catch()
-export class AllExceptionFilter implements ExceptionFilter {
+export class WebSocketFilter implements ExceptionFilter {
   constructor(private readonly exceptionParser: ExceptionParser) {}
 
   catch(exception: Error, host: ArgumentsHost) {
-    console.log('object :>> ', exception, host);
     const wsContext = host.switchToWs();
     const client = wsContext.getClient();
     const { code, error, message, detail } =
       this.exceptionParser.parseError(exception);
-    // const client = wsContext.getClient();
+    console.log(exception);
+
+    // throw new ResponseDTO(
+    //   code,
+    //   message,
+    //   process.env.NODE_ENV === 'production' ? {} : error
+    // );
+    throw new Error('wtf');
   }
 }

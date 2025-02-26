@@ -11,7 +11,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Injectable, Logger, UseFilters } from '@nestjs/common';
 import {
-  MessageBase,
   MessageDataDTO,
   MessageDTO,
   MessagePlatform,
@@ -24,7 +23,8 @@ import {
   TypeormExceptionErrorHandler,
   DefaultErrorHandler
 } from 'src/shared/exception/ErrorHandlers';
-import { AllExceptionFilter } from '../exception/global.exception';
+import { WebSocketFilter } from '../exception/websocket.exception';
+import { ResponseDTO } from 'src/domain/dto/response.dto';
 
 const nestException = new NestException();
 nestException.LinkErrhandlers([
@@ -34,7 +34,7 @@ nestException.LinkErrhandlers([
 
 @Injectable()
 @WebSocketGateway(3080, { namespace: 'publisher' })
-@UseFilters(new AllExceptionFilter(nestException))
+@UseFilters(new WebSocketFilter(nestException))
 export class WsGateway
   extends MessagePlatform
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -78,9 +78,14 @@ export class WsGateway
     @ConnectedSocket() client: Socket
   ): Promise<any> {
     this.clientMap.set(client.id, client);
-    const res = await this.handleMessageFromClient(data, client.id);
+    try {
+      const res = await this.handleMessageFromClient(data, client.id);
+      return res;
+    } catch (error) {
+      // console.log(error);
 
-    return res;
+      return error;
+    }
   }
   /**向特定客户端发送消息 */
   sendMessage(clientId: string, message: SendDTO): void {
@@ -117,7 +122,7 @@ export class WsGateway
     message: T,
     clientFindKey: string
   ) {
-    console.log(message.messageType);
+    // console.log(message.messageType);
 
     switch (message.messageType) {
       case MessageType.PUBLISHER_CREATE:
@@ -125,12 +130,11 @@ export class WsGateway
         const res = await this.publisherService.addPublisher(
           data as MessageDataDTO[MessageType.PUBLISHER_CREATE]
         );
-        console.log('res :>> ', res);
         this.clientMapByName.set(
           data.serverName,
           this.clientMap.get(clientFindKey)
         );
-        return res;
+        return new ResponseDTO(200, '创建成功', res);
 
       default:
         break;

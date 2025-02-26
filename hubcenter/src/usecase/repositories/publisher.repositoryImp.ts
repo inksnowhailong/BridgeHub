@@ -12,7 +12,7 @@ export class PublisherRepositoryPgsql extends PublisherRepository {
     super();
   }
   createPublisher(params: PublisherEntity): Promise<PublisherEntity> {
-    console.log('params :>> ', params);
+    // console.log('params :>> ', params);
 
     return this.repository.save(params);
   }

@@ -28,7 +28,7 @@ export class PublisherService extends PublisherRepositoryPgsql {
   async addPublisher(
     params: PublisherCreateParamsDTO
   ): Promise<PublisherEntity> {
-    console.log('params :>> ', params);
+    // console.log('params :>> ', params);
     const publisherE = new PublisherEntity({
       ...params,
       createdAt: Date.now(),

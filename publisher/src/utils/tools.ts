@@ -10,3 +10,15 @@ export async function getDeviceId() {
     return `${system.serial}-${osInfo.serial}`;
   });
 }
+
+/**
+ * @description: 用于暂停
+ * @return {*}
+ */
+export const useWait = () => {
+  let next :Function = () => {};
+  const wait = new Promise((resolve) => {
+    next = resolve;
+  });
+  return {wait, next};
+};

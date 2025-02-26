@@ -29,7 +29,7 @@ export class PublisherController {
   async getPublisherList(
     @Query() pageParams: PaginationParams
   ): Promise<PaginationResult<PublisherEntity[]>> {
-    console.log('pageParams :>> ', pageParams);
+    // console.log('pageParams :>> ', pageParams);
 
     return this.publisherService.getPublisherList(pageParams);
   }
