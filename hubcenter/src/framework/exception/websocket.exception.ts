@@ -14,11 +14,11 @@ export class WebSocketFilter implements ExceptionFilter {
       this.exceptionParser.parseError(exception);
     console.log(exception);
 
-    // throw new ResponseDTO(
-    //   code,
-    //   message,
-    //   process.env.NODE_ENV === 'production' ? {} : error
-    // );
-    throw new Error('wtf');
+    const response = new ResponseDTO(
+      code,
+      message,
+      process.env.NODE_ENV === 'production' ? {} : error
+    );
+    client.emit('message', response);
   }
 }

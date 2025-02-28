@@ -78,14 +78,14 @@ export class WsGateway
     @ConnectedSocket() client: Socket
   ): Promise<any> {
     this.clientMap.set(client.id, client);
-    try {
-      const res = await this.handleMessageFromClient(data, client.id);
-      return res;
-    } catch (error) {
-      // console.log(error);
+    // try {
+    const res = await this.handleMessageFromClient(data, client.id);
+    return res;
+    // } catch (error) {
+    //   // console.log(error);
 
-      return error;
-    }
+    //   return error;
+    // }
   }
   /**向特定客户端发送消息 */
   sendMessage(clientId: string, message: SendDTO): void {
