@@ -12,7 +12,6 @@ export class WebSocketFilter implements ExceptionFilter {
     const client = wsContext.getClient();
     const { code, error, message, detail } =
       this.exceptionParser.parseError(exception);
-    console.log(exception);
 
     const response = new ResponseDTO(
       code,

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-import { commandCreater, commandOption } from "./commandCreater";
-import { linkHub } from "./linkhub";
+import { commandCreater, commandOption } from "./commandCreater.ts";
+import { linkHub } from "./linkhub.ts";
 
 const program = new Command();
 const creater = new commandCreater(program);
