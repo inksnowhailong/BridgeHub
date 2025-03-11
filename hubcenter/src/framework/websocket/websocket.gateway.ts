@@ -78,14 +78,8 @@ export class WsGateway
     @ConnectedSocket() client: Socket
   ): Promise<any> {
     this.clientMap.set(client.id, client);
-    // try {
     const res = await this.handleMessageFromClient(data, client.id);
     return res;
-    // } catch (error) {
-    //   // console.log(error);
-
-    //   return error;
-    // }
   }
   /**向特定客户端发送消息 */
   sendMessage(clientId: string, message: SendDTO): void {
@@ -123,19 +117,21 @@ export class WsGateway
     clientFindKey: string
   ) {
     // console.log(message.messageType);
-
     switch (message.messageType) {
       case MessageType.PUBLISHER_CREATE:
-        const data = message.data;
-        const res = await this.publisherService.addPublisher(
-          data as MessageDataDTO[MessageType.PUBLISHER_CREATE]
-        );
+        const publisherData =
+          message.data as MessageDataDTO[MessageType.PUBLISHER_CREATE];
+        const res = await this.publisherService.addPublisher(publisherData);
         this.clientMapByName.set(
-          data.serverName,
+          publisherData.serverName,
           this.clientMap.get(clientFindKey)
         );
         return new ResponseDTO(200, '创建成功', res);
-
+      case MessageType.PUBLISHER_API_JSON:
+        const apijson =
+          message.data as MessageDataDTO[MessageType.PUBLISHER_API_JSON];
+          console.log('apijson :>> ', apijson);
+        break;
       default:
         break;
     }

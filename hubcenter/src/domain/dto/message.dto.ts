@@ -1,5 +1,6 @@
 import { MessageType, SendType } from '../enum/message.enum';
 import { PublisherCreateParamsDTO, PublisherStartDTO } from './publisher.dto';
+import { ApiJsonDTO } from './SwaggerApi.dto';
 
 /**接收消息*/
 export type MessageDTO = MessageBase<MessageType, MessageDataDTO>;
@@ -22,10 +23,11 @@ export class MessageBase<T extends string, D extends Record<T, any>> {
   }
 }
 
-/**消息数据 处理的类型映射*/
+/**消息数据 处理的接收类型映射*/
 export interface MessageDataDTO {
   [MessageType.PUBLISHER_CREATE]: PublisherCreateParamsDTO;
   [MessageType.PUBLISHER_START]: PublisherStartDTO;
+  [MessageType.PUBLISHER_API_JSON]: ApiJsonDTO;
 }
 /**发送消息的数据处理类型映射 */
 export interface SendDataDTO {

@@ -3,8 +3,11 @@
  * @return {*}
  */
 export enum MessageType {
-  PUBLISHER_START = 'PUBLISHER_START',
-  PUBLISHER_CREATE = 'PUBLISHER_CREATE'
+  /**发送apijson数据 */
+  PUBLISHER_API_JSON = 'PUBLISHER_API_JSON',
+  /**创建发布者 */
+  PUBLISHER_CREATE = 'PUBLISHER_CREATE',
+  PUBLISHER_START = 'PUBLISHER_START'
 }
 
 /**发送消息类型 */

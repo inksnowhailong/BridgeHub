@@ -4,6 +4,7 @@ import { io } from "socket.io-client";
 import { getDeviceId, useWait } from "./utils/tools.ts";
 import { Websocket } from "./websocket.ts";
 import axios from "axios";
+import { MessageEnum } from "./messageEnum.ts";
 
 export const linkHub = new commandOption(
   "linkhub",
@@ -63,7 +64,7 @@ async function createPublisher(socket: Websocket) {
   socket.emit(
     "message",
     {
-      messageType: "PUBLISHER_CREATE",
+      messageType: MessageEnum.PUBLISHER_CREATE,
       data: {
         serverName: "nodetest " + new Date().toLocaleDateString(),
         gitUrl: "https://github.com/inksnowhailong/BridgeHub.git",
@@ -115,7 +116,7 @@ async function sendAPIJson(socket: Websocket) {
       });
     });
     socket.emit("message", {
-      messageType: "PUBLISHER_UPDATE",
+      messageType:MessageEnum.PUBLISHER_API_JSON,
       data: {
         basePath,
         paths,
