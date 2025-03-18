@@ -23,6 +23,10 @@ export class commandCreater {
   constructor(protected program: Command) {}
   createCommand(comand: commandOption) {
     const cmd = this.program.command(comand.name);
+    // 注入commander实例
+    const commandPrototype = Object.getPrototypeOf(comand);
+    commandPrototype.Command = this.program;
+
     if (comand.description) {
       if (typeof comand.description === "string") {
         cmd.description(comand.description as string);

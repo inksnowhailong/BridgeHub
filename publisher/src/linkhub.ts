@@ -5,6 +5,8 @@ import { getDeviceId, useWait } from "./utils/tools.ts";
 import { Websocket } from "./websocket.ts";
 import axios from "axios";
 import { MessageEnum } from "./messageEnum.ts";
+import { ResponseDTO } from "./dtos/response.dto.ts";
+import { getAllConfig } from "./config.ts";
 
 export const linkHub = new commandOption(
   "linkhub",
@@ -12,8 +14,13 @@ export const linkHub = new commandOption(
   "",
 
   async () => {
+    const wsServer = getAllConfig().hubCenter;
+    if (!wsServer) {
+      console.log("请先设置互联中心地址");
+      return;
+    }
     // 在这里添加发布逻辑
-    const socket = new Websocket();
+    const socket = new Websocket(wsServer);
 
     loopCommand(socket);
   }
@@ -27,6 +34,7 @@ async function loopCommand(socket: Websocket) {
       message: `
       选择你要做的事情
 
+      0:退出
       1:创建发布者
       2:启用发布者
       3:更新接口信息
@@ -35,6 +43,9 @@ async function loopCommand(socket: Websocket) {
   ]);
 
   switch (Number(code)) {
+    case 0:
+      await linkHub.Command?.help();
+      return;
     case 1:
       await createPublisher(socket);
       break;
@@ -60,7 +71,6 @@ async function createPublisher(socket: Websocket) {
   // 创建发布者
   // 向服务器发送消息
   const { wait, next } = useWait();
-
   socket.emit(
     "message",
     {
@@ -74,9 +84,12 @@ async function createPublisher(socket: Websocket) {
         customData: "{}",
       },
     },
-    (res: any) => {
-      console.log(res);
+    (res: ResponseDTO) => {
+      console.log(`
 
+        ${res.message}
+
+        `);
       next();
     }
   );
@@ -89,8 +102,13 @@ async function createPublisher(socket: Websocket) {
  * @return {*}
  */
 async function sendAPIJson(socket: Websocket) {
+  const docUrl = getAllConfig().apiDocUrl;
+  if(!docUrl){
+    console.log("请先设置swagger文档读取地址");
+    return;
+  }
   try {
-    const res = await axios.get("http://localhost:211/userService/v2/api-docs");
+    const res = await axios.get(docUrl);
     const apiJson = res.data;
     const { paths, basePath, definitions } = apiJson;
     // 处理类型数据  优化性能以后再说
@@ -116,15 +134,13 @@ async function sendAPIJson(socket: Websocket) {
       });
     });
     socket.emit("message", {
-      messageType:MessageEnum.PUBLISHER_API_JSON,
+      messageType: MessageEnum.PUBLISHER_API_JSON,
       data: {
         basePath,
         paths,
       },
     });
   } catch (error) {
-    console.log('error :>> ', error);
+    console.log("error :>> ", error);
   }
-
-
 }

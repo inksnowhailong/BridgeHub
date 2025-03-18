@@ -16,9 +16,17 @@ export async function getDeviceId() {
  * @return {*}
  */
 export const useWait = () => {
-  let next :Function = () => {};
-  const wait = new Promise((resolve) => {
-    next = resolve;
+  interface Deferred {
+    wait: Promise<unknown>;
+    next: Function;
+  }
+
+  const obj: Deferred = {} as any; // 先声明为 any，稍后赋值
+
+  // 初始化
+  obj.wait = new Promise((resolve) => {
+    obj.next = resolve;
   });
-  return {wait, next};
+
+  return obj;
 };

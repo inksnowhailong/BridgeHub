@@ -130,7 +130,7 @@ export class WsGateway
       case MessageType.PUBLISHER_API_JSON:
         const apijson =
           message.data as MessageDataDTO[MessageType.PUBLISHER_API_JSON];
-          console.log('apijson :>> ', apijson);
+        console.log('apijson :>> ', apijson);
         break;
       default:
         break;

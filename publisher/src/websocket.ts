@@ -11,7 +11,7 @@ export class Websocket {
       });
     });
     this.socket.on("message", (message) => {
-        console.log("Received message:", message);
+        // console.log("Received message:", message);
       });
       // 断开连接事件
       this.socket.on("disconnect", () => {

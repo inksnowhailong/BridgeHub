@@ -10,13 +10,14 @@ export const configCommand = new commandOption(
   "",
 
   async () => {
+
     // 在这里添加发布逻辑
-    loopCommand(config);
+    loopCommand();
   }
 );
 
 // 循环命令
-async function loopCommand(config: Configstore) {
+async function loopCommand() {
   const { code } = await inquirer.prompt([
     {
       type: "input",
@@ -24,35 +25,41 @@ async function loopCommand(config: Configstore) {
       message: `
       全局配置
 
+      0:退出
       1:设置互联中心地址
       2:设置swagger文档读取地址
       3:读取配置
       4:清空配置
+
       `,
     },
   ]);
 
   switch (Number(code)) {
+    case 0:
+      await configCommand.Command?.help();
+      return ;
     case 1:
-      await setHubCenter(config);
+      await setHubCenter();
       break;
     case 2:
-      await setApiUrl(config);
+      await setApiUrl();
       break;
     case 3:
-      getAllConfig(config);
+      console.log(getAllConfig());
+
       break;
     case 4:
-      clearConfig(config);
+      clearConfig();
       break;
     default:
       console.log("没有这个选项");
       break;
   }
-  loopCommand(config);
+  loopCommand();
 }
 
-async function setHubCenter(config: Configstore) {
+async function setHubCenter() {
   const { url } = await inquirer.prompt([
     {
       type: "input",
@@ -63,7 +70,7 @@ async function setHubCenter(config: Configstore) {
   config.set("hubCenter", url);
 }
 
-async function setApiUrl(config: Configstore) {
+async function setApiUrl() {
   const { url } = await inquirer.prompt([
     {
       type: "input",
@@ -75,13 +82,13 @@ async function setApiUrl(config: Configstore) {
   config.set("apiDocUrl", url);
 }
 
-function getAllConfig(config: Configstore) {
+export function getAllConfig() {
   const hubCenter = config.get("hubCenter");
   const apiDocUrl = config.get("apiDocUrl");
-  console.log({ hubCenter, apiDocUrl });
+  return { hubCenter, apiDocUrl };
 }
 
-function clearConfig(config: Configstore) {
+function clearConfig() {
   config.clear();
   console.log("配置已清空");
 }
