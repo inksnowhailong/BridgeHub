@@ -37,7 +37,8 @@ async function loopCommand(socket: Websocket) {
       0:退出
       1:创建发布者
       2:启用发布者
-      3:更新接口信息
+      3:关闭发布者
+      4:更新接口信息
       `,
     },
   ]);
@@ -49,7 +50,13 @@ async function loopCommand(socket: Websocket) {
     case 1:
       await createPublisher(socket);
       break;
+    case 2:
+      await openPublisher(socket);
+      break;
     case 3:
+      await closePublisher(socket);
+      break;
+    case 4:
       await sendAPIJson(socket);
       break;
 
@@ -103,7 +110,7 @@ async function createPublisher(socket: Websocket) {
  */
 async function sendAPIJson(socket: Websocket) {
   const docUrl = getAllConfig().apiDocUrl;
-  if(!docUrl){
+  if (!docUrl) {
     console.log("请先设置swagger文档读取地址");
     return;
   }
@@ -143,4 +150,90 @@ async function sendAPIJson(socket: Websocket) {
   } catch (error) {
     console.log("error :>> ", error);
   }
+}
+
+/**
+ * @description: 打开发布者
+ * @param {Websocket} socket
+ * @return {*}
+ */
+async function openPublisher(socket: Websocket) {
+  const { DeviceId } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "DeviceId",
+      message: ` 请输入发布者设备Id,默认使用本机设备Id`,
+    },
+  ]);
+  // const {authData} = await inquirer.prompt([
+  //   {
+  //     type: "input",
+  //     name: "authData",
+  //     message: ` 请输入发布者登录密码或授权key`,
+  //   },
+  // ]);
+
+
+
+
+  const deviceId =DeviceId|| await getDeviceId();
+  console.log('faxi');
+
+  // 向服务器发送消息
+  const { wait, next } = useWait();
+  socket.emit(
+    "message",
+    {
+      messageType: MessageEnum.PUBLISHER_START,
+      data: {
+        deviceId,
+        authData:'no'
+      },
+    },
+    (res: ResponseDTO) => {
+      console.log(`
+        ${res.message}
+        `);
+      next();
+    }
+  );
+  await wait;
+}
+
+/**
+ * @description: 关闭发布者
+ * @param {Websocket} socket
+ * @return {*}
+ */
+async function closePublisher(socket: Websocket) {
+  const { DeviceId } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "DeviceId",
+      message: ` 请输入发布者设备Id,默认使用本机设备Id`,
+    },
+  ]);
+
+  const deviceId = DeviceId || (await getDeviceId());
+  console.log("关闭发布者中...");
+
+  // 向服务器发送消息
+  const { wait, next } = useWait();
+  socket.emit(
+    "message",
+    {
+      messageType: MessageEnum.PUBLISHER_CLOSE,
+      data: {
+        deviceId,
+        authData: "no",
+      },
+    },
+    (res: ResponseDTO) => {
+      console.log(`
+        ${res.message}
+        `);
+      next();
+    }
+  );
+  await wait;
 }

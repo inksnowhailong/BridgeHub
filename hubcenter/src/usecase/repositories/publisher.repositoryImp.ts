@@ -6,6 +6,7 @@ import {
   PaginationResult
 } from 'src/domain/dto/Pagination.dto';
 import { Repository, Like } from 'typeorm';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 export class PublisherRepositoryPgsql extends PublisherRepository {
   constructor(private readonly repository: Repository<PublisherEntity>) {
@@ -62,11 +63,19 @@ export class PublisherRepositoryPgsql extends PublisherRepository {
     const pageData = new Pagination(total, pageSize, currentPage);
     return pageData.createPaginationResult(datas);
   }
-  async getPublisherByDeviceId(deviceId: string): Promise<PublisherEntity> {
-    return this.repository.findOne({
+  async getPublisherByDeviceId(
+    deviceId: string,
+    authData: string
+  ): Promise<PublisherEntity> {
+    const publisher = await this.repository.findOne({
       where: {
         deviceId
       }
     });
+    if (!publisher) throw new NotFoundException('找不到对应发布者设备ID');
+
+    if (publisher.authData !== authData)
+      throw new UnauthorizedException('身份验证失败');
+    return publisher;
   }
 }

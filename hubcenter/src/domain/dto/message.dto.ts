@@ -28,6 +28,7 @@ export interface MessageDataDTO {
   [MessageType.PUBLISHER_CREATE]: PublisherCreateParamsDTO;
   [MessageType.PUBLISHER_START]: PublisherStartDTO;
   [MessageType.PUBLISHER_API_JSON]: ApiJsonDTO;
+  [MessageType.PUBLISHER_CLOSE]: PublisherStartDTO;
 }
 
 /**发送消息的数据处理类型映射 */

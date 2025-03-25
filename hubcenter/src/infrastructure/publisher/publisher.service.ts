@@ -69,8 +69,28 @@ export class PublisherService extends PublisherRepositoryPgsql {
    * @return {*}
    */
   async startPublisher(server: PublisherStartDTO) {
-    const publisher = await this.getPublisherByDeviceId(server.deviceId);
+    const publisher = await this.getPublisherByDeviceId(
+      server.deviceId,
+      server.authData
+    );
     if (publisher) {
+      publisher.status = PublisherStatus.ACTIVE;
+      publisher.lastStartedAt = Date.now();
+      return await this.updatePublisher(publisher);
+    }
+  }
+
+  /**
+   * @description: 停止与某个服务的发布者的链接
+   * @param {string} deviceId
+   * @param {string} authData
+   * @return {*}
+   */
+  async stopPublisher(deviceId: string, authData: string) {
+    const publisher = await this.getPublisherByDeviceId(deviceId, authData);
+    if (publisher) {
+      publisher.status = PublisherStatus.CLOSE;
+      return await this.updatePublisher(publisher);
     }
   }
 }

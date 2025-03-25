@@ -132,6 +132,20 @@ export class WsGateway
           message.data as MessageDataDTO[MessageType.PUBLISHER_API_JSON];
         console.log('apijson :>> ', apijson);
         break;
+      case MessageType.PUBLISHER_START:
+        const publisherDeviceId =
+          message.data as MessageDataDTO[MessageType.PUBLISHER_START];
+        const startRes =
+          await this.publisherService.startPublisher(publisherDeviceId);
+        return new ResponseDTO(200, '启动成功', startRes);
+      case MessageType.PUBLISHER_CLOSE:
+        const stopData =
+          message.data as MessageDataDTO[MessageType.PUBLISHER_CLOSE];
+        const stopRes = await this.publisherService.stopPublisher(
+          stopData.deviceId,
+          stopData.authData
+        );
+        return new ResponseDTO(200, '关闭成功', stopRes);
       default:
         break;
     }

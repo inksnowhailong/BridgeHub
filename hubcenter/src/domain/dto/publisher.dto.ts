@@ -86,9 +86,6 @@ export class PublisherUpdateStatusDTO {
  * @return {*}
  */
 export class PublisherStartDTO {
-  /**服务的名字 */
-  @IsNotEmpty()
-  serverName: string;
   /**身份验证信息 */
   @IsNotEmpty()
   authData: string;
