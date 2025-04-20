@@ -9,8 +9,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { PublisherModule } from '../infrastructure/publisher/publisher.module';
 import { SubscriberModule } from '../infrastructure/subscriber/subscriber.module';
-import { AuthMiddleware } from 'src/framework/middleware/authMiddleware';
-import { PublisherController } from 'src/infrastructure/publisher/publisher.controller';
+import { AuthMiddleware } from './middleware/auth.middleware';
 import { WsGateway } from './websocket/websocket.gateway';
 
 @Module({
@@ -22,7 +21,10 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .exclude({ path: 'publisher/create', method: RequestMethod.POST })
-      .forRoutes(PublisherController);
+      .exclude(
+        { path: 'publisher/create', method: RequestMethod.POST },
+        { path: 'subscriber/create', method: RequestMethod.POST }
+      )
+      .forRoutes('*');
   }
 }

@@ -14,7 +14,10 @@ export class SubscriptionEntity {
   @Column()
   createdAt: number;
 
-  constructor(partial: Partial<SubscriptionEntity>) {
-    Object.assign(this, partial);
+  constructor(init?: Partial<SubscriptionEntity>) {
+    Object.assign(this, {
+      createdAt: Date.now(),
+      ...init
+    });
   }
 }

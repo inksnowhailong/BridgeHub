@@ -1,11 +1,10 @@
-import { Entity, Column, PrimaryColumn, Unique, Generated } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { PublisherStatus } from '../enum/publisher.enum';
 
 @Entity()
 export class PublisherEntity {
   /**服务的主键 */
-  @PrimaryColumn({ type: 'uuid', unique: true })
-  @Generated('uuid')
+  @PrimaryGeneratedColumn('uuid')
   id: string;
   /**服务的名字 */
   @Column({ type: 'varchar', length: 255, unique: true })

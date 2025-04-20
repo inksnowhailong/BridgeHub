@@ -1,36 +1,60 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { SubscriberStatus } from '../enum/subscriber.enum';
 
-@Entity('subscriber')
+@Entity()
 export class SubscriberEntity {
-  @PrimaryColumn()
-  deviceId: string;
+  /**订阅者的主键 */
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column()
-  serverName: string;
+  /**订阅者的名字 */
+  @Column({ type: 'varchar', length: 255, unique: true })
+  subscriberName: string;
 
-  @Column()
-  gitUrl: string;
-
-  @Column()
+  /**身份验证信息 */
+  @Column({ type: 'varchar' })
   authData: string;
 
-  @Column()
-  serverType: string;
+  /**设备识别码 */
+  @Column({ type: 'varchar', length: 255, unique: true })
+  deviceId: string;
 
-  @Column()
-  customData: string;
+  /**订阅的发布者ID列表 */
+  @Column({ type: 'varchar' })
+  publisherIds: string;
 
-  @Column()
+  /**订阅者创建时间 */
+  @Column({ type: 'bigint' })
   createdAt: number;
 
-  @Column()
-  lastStartedAt: number;
+  /**上一次连接时间 */
+  @Column({ type: 'bigint' })
+  lastConnectedAt: number;
 
-  @Column()
+  /**订阅者的状态 */
+  @Column({ type: 'varchar', length: 64 })
   status: SubscriberStatus;
 
-  constructor(partial: Partial<SubscriberEntity>) {
-    Object.assign(this, partial);
+  /**自定义储存的数据 */
+  @Column({ type: 'varchar' })
+  customData: string;
+
+  constructor(
+    init?: Omit<SubscriberEntity, 'id'> & Partial<Pick<SubscriberEntity, 'id'>>
+  ) {
+    Object.assign(
+      this,
+      {
+        subscriberName: '',
+        authData: '',
+        deviceId: '',
+        publisherIds: '[]',
+        createdAt: 0,
+        lastConnectedAt: 0,
+        status: SubscriberStatus.CLOSE,
+        customData: '{}'
+      },
+      init
+    );
   }
 }

@@ -17,5 +17,11 @@ export enum PublisherStatus {
   /**禁用 */
   DISABLE = 'disable',
   /**关闭 */
-  CLOSE = 'close'
+  CLOSE = 'close',
+  /**运行中 */
+  RUNNING = 'running',
+  /**停止 */
+  STOPPED = 'stopped',
+  /**错误 */
+  ERROR = 'error'
 }

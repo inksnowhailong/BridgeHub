@@ -1,83 +1,113 @@
-import { Repository } from 'typeorm';
+import { SubscriberEntity } from '../../domain/entities/subscriber.entity';
+import { SubscriberRepository } from '../../domain/repositories/subscriber.repository';
+import { SubscriptionEntity } from '../../domain/entities/subscription.entity';
 import {
   PaginationParams,
   PaginationResult,
   Pagination
-} from 'src/domain/dto/Pagination.dto';
-import { SubscriberEntity } from 'src/domain/entities/subscriber.entity';
-import { SubscriptionEntity } from 'src/domain/entities/subscription.entity';
-import { SubscriberRepository } from './subscriber.repository';
+} from '../../domain/dto/Pagination.dto';
+import { Repository, Like } from 'typeorm';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 
-export class SubscriberRepositoryPgsql implements SubscriberRepository {
+export class SubscriberRepositoryPgsql extends SubscriberRepository {
   constructor(
-    private readonly subscriberRepository: Repository<SubscriberEntity>,
+    private readonly repository: Repository<SubscriberEntity>,
     private readonly subscriptionRepository: Repository<SubscriptionEntity>
-  ) {}
-
-  async createSubscriber(
-    subscriber: SubscriberEntity
-  ): Promise<SubscriberEntity> {
-    return await this.subscriberRepository.save(subscriber);
+  ) {
+    super();
   }
 
-  async updateSubscriber(
-    subscriber: SubscriberEntity
-  ): Promise<SubscriberEntity> {
-    await this.subscriberRepository.update(
-      { deviceId: subscriber.deviceId },
-      subscriber
-    );
-    return subscriber;
+  async createSubscriber(params: SubscriberEntity): Promise<SubscriberEntity> {
+    return this.repository.save(params);
+  }
+
+  async updateSubscriber(params: SubscriberEntity): Promise<SubscriberEntity> {
+    const result = await this.repository.update(params.id, params);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Subscriber with ID ${params.id} not found`);
+    }
+    return params;
   }
 
   async getSubscriberById(id: string): Promise<SubscriberEntity> {
-    return await this.subscriberRepository.findOne({ where: { deviceId: id } });
+    const subscriber = await this.repository.findOne({
+      where: { id }
+    });
+    if (!subscriber) {
+      throw new NotFoundException(`Subscriber with ID ${id} not found`);
+    }
+    return subscriber;
+  }
+
+  async getSubscriberBySubscriberName(
+    subscriberName: string,
+    pageParams: PaginationParams
+  ): Promise<PaginationResult<SubscriberEntity[]>> {
+    const { currentPage = 1, pageSize = 10 } = pageParams;
+    const [data, total] = await this.repository.findAndCount({
+      where: {
+        subscriberName: Like(`%${subscriberName}%`)
+      },
+      skip: (currentPage - 1) * pageSize,
+      take: pageSize
+    });
+
+    const pagination = new Pagination(total, pageSize, currentPage);
+    return {
+      data,
+      Pagination: pagination
+    };
+  }
+
+  async getAllSubscriber(): Promise<SubscriberEntity[]> {
+    return this.repository.find();
+  }
+
+  async getListByPage(
+    pageParams: PaginationParams
+  ): Promise<PaginationResult<SubscriberEntity[]>> {
+    const { currentPage = 1, pageSize = 10 } = pageParams;
+    const [data, total] = await this.repository.findAndCount({
+      skip: (currentPage - 1) * pageSize,
+      take: pageSize
+    });
+
+    const pagination = new Pagination(total, pageSize, currentPage);
+    return {
+      data,
+      Pagination: pagination
+    };
   }
 
   async getSubscriberByDeviceId(
     deviceId: string,
     authData: string
   ): Promise<SubscriberEntity> {
-    return await this.subscriberRepository.findOne({
+    const subscriber = await this.repository.findOne({
       where: { deviceId, authData }
     });
+    if (!subscriber) {
+      throw new UnauthorizedException('Invalid device ID or auth data');
+    }
+    return subscriber;
   }
 
-  async getListByPage(
-    params: PaginationParams
-  ): Promise<PaginationResult<SubscriberEntity[]>> {
-    const [data, total] = await this.subscriberRepository.findAndCount({
-      skip: (params.currentPage - 1) * params.pageSize,
-      take: params.pageSize
-    });
-
-    const pagination = new Pagination(
-      total,
-      params.pageSize,
-      params.currentPage
-    );
-    return pagination.createPaginationResult(data);
-  }
-
-  async deleteSubscriber(deviceId: string): Promise<any> {
-    // 先删除关联的订阅关系
+  async deleteSubscriber(deviceId: string): Promise<void> {
     await this.subscriptionRepository.delete({ subscriberId: deviceId });
-    // 再删除订阅者
-    return await this.subscriberRepository.delete({ deviceId });
+    await this.repository.delete({ deviceId });
   }
 
-  // 订阅关系相关操作
   async createSubscription(
     subscription: SubscriptionEntity
   ): Promise<SubscriptionEntity> {
-    return await this.subscriptionRepository.save(subscription);
+    return this.subscriptionRepository.save(subscription);
   }
 
   async removeSubscription(
     subscriberId: string,
     publisherId: string
-  ): Promise<any> {
-    return await this.subscriptionRepository.delete({
+  ): Promise<void> {
+    await this.subscriptionRepository.delete({
       subscriberId,
       publisherId
     });
@@ -86,7 +116,7 @@ export class SubscriberRepositoryPgsql implements SubscriberRepository {
   async getSubscriptionsBySubscriberId(
     subscriberId: string
   ): Promise<SubscriptionEntity[]> {
-    return await this.subscriptionRepository.find({
+    return this.subscriptionRepository.find({
       where: { subscriberId }
     });
   }
@@ -94,7 +124,7 @@ export class SubscriberRepositoryPgsql implements SubscriberRepository {
   async getSubscriptionsByPublisherId(
     publisherId: string
   ): Promise<SubscriptionEntity[]> {
-    return await this.subscriptionRepository.find({
+    return this.subscriptionRepository.find({
       where: { publisherId }
     });
   }
