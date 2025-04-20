@@ -10,7 +10,6 @@ export const configCommand = new commandOption(
   "",
 
   async () => {
-
     // 在这里添加发布逻辑
     loopCommand();
   }
@@ -37,7 +36,7 @@ async function loopCommand() {
   switch (Number(code)) {
     case 0:
       await configCommand.Command?.help();
-      return ;
+      return;
     case 1:
       await setHubCenter();
       break;

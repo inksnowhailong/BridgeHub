@@ -18,6 +18,7 @@ import {
 } from 'src/domain/dto/message.dto';
 import { SendType, MessageType } from 'src/domain/enum/message.enum';
 import { PublisherService } from 'src/infrastructure/publisher/publisher.service';
+import { SubscriberService } from 'src/infrastructure/subscriber/subscriber.service';
 import { NestException } from 'src/shared/exception/nest.exception';
 import {
   TypeormExceptionErrorHandler,
@@ -43,7 +44,11 @@ export class WsGateway
   private clientMap = new Map<string, Socket>();
   private clientMapByName = new Map<string, Socket>();
   private logger: Logger = new Logger('WebSocketGateway');
-  constructor(private publisherService: PublisherService) {
+
+  constructor(
+    private publisherService: PublisherService,
+    private subscriberService: SubscriberService
+  ) {
     super();
   }
   /**
@@ -101,13 +106,40 @@ export class WsGateway
   sendMessageToClient<T extends SendDTO>(message: T, clientFindKey: string) {
     switch (message.messageType) {
       case SendType.PUBLISHER_CLOSE:
+      case SendType.SUBSCRIBER_CLOSE:
         this.sendMessage(clientFindKey, message.data);
         break;
-
+      case SendType.PUBLISHER_MESSAGE:
+        // 发送发布者的消息到订阅该发布者的所有订阅者
+        this.sendPublisherMessageToSubscribers(message, clientFindKey);
+        break;
       default:
         break;
     }
   }
+
+  /**
+   * 发送发布者消息到订阅者
+   */
+  async sendPublisherMessageToSubscribers<T extends SendDTO>(message: T, publisherId: string) {
+    // 获取所有订阅该发布者的订阅者
+    const subscriptions = await this.subscriberService['subscriberRepository'].getSubscriptionsByPublisherId(publisherId);
+
+    // 向每个订阅者发送消息
+    for (const subscription of subscriptions) {
+      const subscriberClient = this.clientMap.get(subscription.subscriberId);
+      if (subscriberClient) {
+        subscriberClient.emit('message', {
+          messageType: 'PUBLISHER_MESSAGE',
+          data: {
+            publisherId,
+            content: message.data
+          }
+        });
+      }
+    }
+  }
+
   /**
    * @description: 接到客户端消息
    * @return {*}
@@ -118,6 +150,7 @@ export class WsGateway
   ) {
     // console.log(message.messageType);
     switch (message.messageType) {
+      // 发布者相关消息
       case MessageType.PUBLISHER_CREATE:
         const publisherData =
           message.data as MessageDataDTO[MessageType.PUBLISHER_CREATE];
@@ -146,6 +179,42 @@ export class WsGateway
           stopData.authData
         );
         return new ResponseDTO(200, '关闭成功', stopRes);
+
+      // 订阅者相关消息
+      case MessageType.SUBSCRIBER_CREATE:
+        const subscriberData =
+          message.data as MessageDataDTO[MessageType.SUBSCRIBER_CREATE];
+        const subRes = await this.subscriberService.addSubscriber(subscriberData);
+        return new ResponseDTO(200, '创建订阅者成功', subRes);
+      case MessageType.SUBSCRIBER_START:
+        const subscriberDeviceId =
+          message.data as MessageDataDTO[MessageType.SUBSCRIBER_START];
+        const subStartRes =
+          await this.subscriberService.startSubscriber(subscriberDeviceId);
+        return new ResponseDTO(200, '启动订阅者成功', subStartRes);
+      case MessageType.SUBSCRIBER_CLOSE:
+        const subStopData =
+          message.data as MessageDataDTO[MessageType.SUBSCRIBER_CLOSE];
+        const subStopRes = await this.subscriberService.stopSubscriber(
+          subStopData.deviceId,
+          subStopData.authData
+        );
+        return new ResponseDTO(200, '关闭订阅者成功', subStopRes);
+
+      // 订阅关系相关消息
+      case MessageType.SUBSCRIBER_SUBSCRIBE:
+        const subscriptionData =
+          message.data as MessageDataDTO[MessageType.SUBSCRIBER_SUBSCRIBE];
+        const subScribeRes = await this.subscriberService.createSubscription(subscriptionData);
+        return new ResponseDTO(200, '订阅成功', subScribeRes);
+      case MessageType.SUBSCRIBER_UNSUBSCRIBE:
+        const unsubscriptionData =
+          message.data as MessageDataDTO[MessageType.SUBSCRIBER_UNSUBSCRIBE];
+        const unsubRes = await this.subscriberService.cancelSubscription(
+          unsubscriptionData.subscriberId,
+          unsubscriptionData.publisherId
+        );
+        return new ResponseDTO(200, '取消订阅成功', unsubRes);
       default:
         break;
     }
