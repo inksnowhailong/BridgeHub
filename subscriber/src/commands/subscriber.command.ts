@@ -1,12 +1,13 @@
 import { Command } from 'commander';
 import { commandOption } from '../commandCreater';
-import { SubscriberCreateDTO } from '../dtos/subscriber.dto';
+import { SubscriberCreateDTO, SubscriberConnectDTO } from '../dtos/subscriber.dto';
 import { ResponseDTO } from '../dtos/response.dto';
-import { websocket } from '../websocket';
+import { Websocket } from '../websocket';
 import { MessageType } from '../messageEnum';
-import { config } from '../config';
+import { getAllConfig } from '../config';
 import * as readline from 'readline';
 import * as crypto from 'crypto';
+import { useWait } from '../utils/tools';
 
 /**
  * @description: 创建订阅者命令
@@ -38,13 +39,13 @@ export class SubscriberCommand {
         const authData = crypto.randomBytes(16).toString('hex');
 
         // 创建订阅者
-        const subscriber: SubscriberCreateDTO = {
-          subscriberName: name,
-          deviceId,
+        const subscriber = new SubscriberCreateDTO(
+          name,
           authData,
-          publisherIds: [],
-          customData: '{}'
-        };
+          deviceId,
+          [],
+          '{}'
+        );
 
         // 询问是否要订阅发布者
         const rl = readline.createInterface({
@@ -81,12 +82,8 @@ export class SubscriberCommand {
       [
         '-d, --deviceId <deviceId>',
         '设备ID',
-        ''
-      ],
-      [
         '-a, --authData <authData>',
-        '认证信息',
-        ''
+        '认证信息'
       ],
       async function(this: Command) {
         const deviceId = this.opts().deviceId;
@@ -110,19 +107,26 @@ export class SubscriberCommand {
  */
 async function createSubscriber(subscriber: SubscriberCreateDTO) {
   try {
-    const response = await websocket.sendMessage<ResponseDTO>({
-      type: MessageType.SUBSCRIBER_CREATE,
-      data: subscriber
-    });
+    const ws = new Websocket(getAllConfig().hubCenter);
+    const { wait, next } = useWait();
 
-    if (response.code === 200) {
-      console.log('订阅者创建成功');
-      console.log('设备ID:', subscriber.deviceId);
-      console.log('认证信息:', subscriber.authData);
-      console.log('请妥善保管以上信息，用于后续连接');
-    } else {
-      console.error('订阅者创建失败:', response.message);
-    }
+    ws.emit(
+      "message",
+      {
+        messageType: MessageType.SUBSCRIBER_CREATE,
+        data: subscriber
+      },
+      (res: ResponseDTO) => {
+        console.log(`\n${res.message}\n`);
+        if (res.code === 200) {
+          console.log('设备ID:', subscriber.deviceId);
+          console.log('认证信息:', subscriber.authData);
+          console.log('请妥善保管以上信息，用于后续连接');
+        }
+        next();
+      }
+    );
+    await wait;
   } catch (error) {
     console.error('订阅者创建失败:', error);
   }
@@ -136,19 +140,21 @@ async function createSubscriber(subscriber: SubscriberCreateDTO) {
  */
 async function connectSubscriber(deviceId: string, authData: string) {
   try {
-    const response = await websocket.sendMessage<ResponseDTO>({
-      type: MessageType.SUBSCRIBER_CONNECT,
-      data: {
-        deviceId,
-        authData
-      }
-    });
+    const ws = new Websocket(getAllConfig().hubCenter);
+    const { wait, next } = useWait();
 
-    if (response.code === 200) {
-      console.log('订阅者连接成功');
-    } else {
-      console.error('订阅者连接失败:', response.message);
-    }
+    ws.emit(
+      "message",
+      {
+        messageType: MessageType.SUBSCRIBER_CONNECT,
+        data: new SubscriberConnectDTO(authData, deviceId)
+      },
+      (res: ResponseDTO) => {
+        console.log(`\n${res.message}\n`);
+        next();
+      }
+    );
+    await wait;
   } catch (error) {
     console.error('订阅者连接失败:', error);
   }

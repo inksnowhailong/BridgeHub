@@ -6,7 +6,8 @@ import {
 import {
   SubscriberCreateParamsDTO,
   SubscriberConnectDTO,
-  SubscriberUpdateStatusDTO
+  SubscriberUpdateStatusDTO,
+  SubscriptionDTO
 } from '../../domain/dto/subscriber.dto';
 import { SubscriberEntity } from '../../domain/entities/subscriber.entity';
 import { SubscriptionEntity } from '../../domain/entities/subscription.entity';
@@ -87,5 +88,112 @@ export class SubscriberService extends SubscriberRepositoryPgsql {
     const subscriber = await this.getSubscriberByDeviceId(deviceId, authData);
     subscriber.status = SubscriberStatus.CLOSE;
     return this.updateSubscriber(subscriber);
+  }
+
+  /**
+   * @description: 订阅发布者
+   * @param {string} publisherId
+   * @return {*}
+   */
+  async subscribePublisher(publisherId: string): Promise<SubscriberEntity> {
+    const subscriber = await this.getCurrentSubscriber();
+    if (!subscriber) {
+      throw new Error('未找到当前订阅者');
+    }
+
+    const publisherIds = JSON.parse(subscriber.publisherIds || '[]');
+    if (!publisherIds.includes(publisherId)) {
+      publisherIds.push(publisherId);
+      subscriber.publisherIds = JSON.stringify(publisherIds);
+      return this.updateSubscriber(subscriber);
+    }
+    return subscriber;
+  }
+
+  /**
+   * @description: 取消订阅发布者
+   * @param {string} publisherId
+   * @return {*}
+   */
+  async unsubscribePublisher(publisherId: string): Promise<SubscriberEntity> {
+    const subscriber = await this.getCurrentSubscriber();
+    if (!subscriber) {
+      throw new Error('未找到当前订阅者');
+    }
+
+    const publisherIds = JSON.parse(subscriber.publisherIds || '[]');
+    const index = publisherIds.indexOf(publisherId);
+    if (index > -1) {
+      publisherIds.splice(index, 1);
+      subscriber.publisherIds = JSON.stringify(publisherIds);
+      return this.updateSubscriber(subscriber);
+    }
+    return subscriber;
+  }
+
+  /**
+   * @description: 获取当前订阅者
+   * @return {*}
+   */
+  private async getCurrentSubscriber(): Promise<SubscriberEntity> {
+    // 这里需要根据实际情况获取当前订阅者
+    // 例如通过设备ID或其他标识
+    return null;
+  }
+
+  /**
+   * @description: 获取订阅者订阅的发布者列表
+   * @param {string} id
+   * @return {*}
+   */
+  async getSubscribedPublishers(id: string): Promise<any[]> {
+    const subscriber = await this.getSubscriberById(id);
+    const publisherIds = JSON.parse(subscriber.publisherIds || '[]');
+    return publisherIds;
+  }
+
+  /**
+   * @description: 获取订阅者详情
+   * @param {string} id
+   * @return {*}
+   */
+  async getSubscriberDetail(id: string): Promise<SubscriberEntity> {
+    return this.getSubscriberById(id);
+  }
+
+  /**
+   * @description: 创建订阅关系
+   * @param {SubscriptionDTO} subscription
+   * @return {*}
+   */
+  async createSubscription(
+    subscription: SubscriptionDTO
+  ): Promise<SubscriptionEntity> {
+    const subscriber = await this.getSubscriberById(subscription.subscriberId);
+    const publisherIds = JSON.parse(subscriber.publisherIds || '[]');
+    if (!publisherIds.includes(subscription.publisherId)) {
+      publisherIds.push(subscription.publisherId);
+      subscriber.publisherIds = JSON.stringify(publisherIds);
+      await this.updateSubscriber(subscriber);
+    }
+    return {
+      id: `${subscription.subscriberId}-${subscription.publisherId}`,
+      subscriberId: subscription.subscriberId,
+      publisherId: subscription.publisherId,
+      createdAt: subscription.createdAt
+    };
+  }
+
+  /**
+   * @description: 取消订阅关系
+   * @param {string} subscriberId
+   * @param {string} publisherId
+   * @return {*}
+   */
+  async cancelSubscription(
+    subscriberId: string,
+    publisherId: string
+  ): Promise<void> {
+    await this.unsubscribePublisher(publisherId);
   }
 }

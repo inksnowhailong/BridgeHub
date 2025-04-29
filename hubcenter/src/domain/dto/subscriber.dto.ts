@@ -91,3 +91,43 @@ export class SubscriberConnectDTO {
   @IsNotEmpty()
   deviceId: string;
 }
+
+/**
+ * @description: 订阅者启动参数
+ */
+export class SubscriberStartDTO {
+  /**设备ID */
+  @IsNotEmpty()
+  deviceId: string;
+
+  /**身份验证信息 */
+  @IsNotEmpty()
+  authData: string;
+}
+
+/**
+ * @description: 订阅关系参数
+ */
+export class SubscriptionDTO {
+  /**订阅者ID */
+  @IsNotEmpty()
+  subscriberId: string;
+
+  /**发布者ID */
+  @IsNotEmpty()
+  publisherId: string;
+
+  /**创建时间 */
+  @IsNotEmpty()
+  createdAt: number;
+
+  constructor(
+    subscriberId: string,
+    publisherId: string,
+    createdAt: number = Date.now()
+  ) {
+    this.subscriberId = subscriberId;
+    this.publisherId = publisherId;
+    this.createdAt = createdAt;
+  }
+}

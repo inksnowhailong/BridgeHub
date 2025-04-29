@@ -121,9 +121,15 @@ export class WsGateway
   /**
    * 发送发布者消息到订阅者
    */
-  async sendPublisherMessageToSubscribers<T extends SendDTO>(message: T, publisherId: string) {
+  async sendPublisherMessageToSubscribers<T extends SendDTO>(
+    message: T,
+    publisherId: string
+  ) {
     // 获取所有订阅该发布者的订阅者
-    const subscriptions = await this.subscriberService['subscriberRepository'].getSubscriptionsByPublisherId(publisherId);
+    const subscriptions =
+      await this.subscriberService[
+        'subscriberRepository'
+      ].getSubscriptionsByPublisherId(publisherId);
 
     // 向每个订阅者发送消息
     for (const subscription of subscriptions) {
@@ -148,7 +154,6 @@ export class WsGateway
     message: T,
     clientFindKey: string
   ) {
-    // console.log(message.messageType);
     switch (message.messageType) {
       // 发布者相关消息
       case MessageType.PUBLISHER_CREATE:
@@ -184,18 +189,21 @@ export class WsGateway
       case MessageType.SUBSCRIBER_CREATE:
         const subscriberData =
           message.data as MessageDataDTO[MessageType.SUBSCRIBER_CREATE];
-        const subRes = await this.subscriberService.addSubscriber(subscriberData);
+        const subRes =
+          await this.subscriberService.addSubscriber(subscriberData);
         return new ResponseDTO(200, '创建订阅者成功', subRes);
       case MessageType.SUBSCRIBER_START:
         const subscriberDeviceId =
           message.data as MessageDataDTO[MessageType.SUBSCRIBER_START];
-        const subStartRes =
-          await this.subscriberService.startSubscriber(subscriberDeviceId);
+        const subStartRes = await this.subscriberService.connectSubscriber({
+          deviceId: subscriberDeviceId.deviceId,
+          authData: subscriberDeviceId.authData
+        });
         return new ResponseDTO(200, '启动订阅者成功', subStartRes);
       case MessageType.SUBSCRIBER_CLOSE:
         const subStopData =
           message.data as MessageDataDTO[MessageType.SUBSCRIBER_CLOSE];
-        const subStopRes = await this.subscriberService.stopSubscriber(
+        const subStopRes = await this.subscriberService.disconnectSubscriber(
           subStopData.deviceId,
           subStopData.authData
         );
@@ -205,18 +213,25 @@ export class WsGateway
       case MessageType.SUBSCRIBER_SUBSCRIBE:
         const subscriptionData =
           message.data as MessageDataDTO[MessageType.SUBSCRIBER_SUBSCRIBE];
-        const subScribeRes = await this.subscriberService.createSubscription(subscriptionData);
+        const subScribeRes = await this.subscriberService.subscribePublisher(
+          subscriptionData.publisherId
+        );
         return new ResponseDTO(200, '订阅成功', subScribeRes);
       case MessageType.SUBSCRIBER_UNSUBSCRIBE:
         const unsubscriptionData =
           message.data as MessageDataDTO[MessageType.SUBSCRIBER_UNSUBSCRIBE];
-        const unsubRes = await this.subscriberService.cancelSubscription(
-          unsubscriptionData.subscriberId,
+        const unsubRes = await this.subscriberService.unsubscribePublisher(
           unsubscriptionData.publisherId
         );
         return new ResponseDTO(200, '取消订阅成功', unsubRes);
+      case MessageType.PUBLISHER_LIST:
+        const publishers = await this.publisherService.getPublisherList({
+          pageSize: 100,
+          currentPage: 1
+        });
+        return new ResponseDTO(200, '获取发布者列表成功', publishers.data);
       default:
-        break;
+        return new ResponseDTO(400, '未知的消息类型', null);
     }
   }
 }

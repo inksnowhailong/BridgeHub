@@ -1,21 +1,11 @@
 import { Command } from "commander";
 
 export class commandOption {
-  command: Command | null = null;
-
   constructor(
     public name: string,
-    public description?:
-      | [str: string, argsDescription: Record<string, string>]
-      | string,
-    public option?:
-      | [
-          flags: string,
-          description?: string,
-          defaultValue?: string | boolean | string[]
-        ]
-      | string,
-    public action?: (this: Command, ...args: any[]) => void | Promise<void>
+    public description: string,
+    public options: string | string[],
+    public action: (...args: any[]) => Promise<void>
   ) {}
 }
 
@@ -28,17 +18,15 @@ export class commandCreater {
     commandPrototype.Command = this.program;
 
     if (comand.description) {
-      if (typeof comand.description === "string") {
-        cmd.description(comand.description as string);
-      } else {
-        cmd.description(...comand.description);
-      }
+      cmd.description(comand.description);
     }
-    if (comand.option) {
-      if (typeof comand.option === "string") {
-        cmd.option(comand.option as string);
+    if (comand.options) {
+      if (typeof comand.options === "string") {
+        cmd.option(comand.options);
       } else {
-        cmd.option(...comand.option);
+        comand.options.forEach((option) => {
+          cmd.option(option);
+        });
       }
     }
     if (comand.action) {

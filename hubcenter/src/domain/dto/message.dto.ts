@@ -1,6 +1,10 @@
 import { MessageType, SendType } from '../enum/message.enum';
 import { PublisherCreateParamsDTO, PublisherStartDTO } from './publisher.dto';
-import { SubscriberCreateParamsDTO, SubscriberStartDTO, SubscriptionDTO } from './subscriber.dto';
+import {
+  SubscriberCreateParamsDTO,
+  SubscriberStartDTO,
+  SubscriptionDTO
+} from './subscriber.dto';
 import { ApiJsonDTO } from './SwaggerApi.dto';
 
 /**接收消息*/
@@ -30,11 +34,16 @@ export interface MessageDataDTO {
   [MessageType.PUBLISHER_START]: PublisherStartDTO;
   [MessageType.PUBLISHER_API_JSON]: ApiJsonDTO;
   [MessageType.PUBLISHER_CLOSE]: PublisherStartDTO;
+  [MessageType.PUBLISHER_LIST]: any;
   [MessageType.SUBSCRIBER_CREATE]: SubscriberCreateParamsDTO;
   [MessageType.SUBSCRIBER_START]: SubscriberStartDTO;
   [MessageType.SUBSCRIBER_CLOSE]: SubscriberStartDTO;
   [MessageType.SUBSCRIBER_SUBSCRIBE]: SubscriptionDTO;
   [MessageType.SUBSCRIBER_UNSUBSCRIBE]: SubscriptionDTO;
+  [MessageType.SUBSCRIBER_UPDATE]: SubscriberStartDTO;
+  [MessageType.SUBSCRIBER_CONNECT]: SubscriberStartDTO;
+  [MessageType.SUBSCRIBER_DISCONNECT]: SubscriberStartDTO;
+  [MessageType.SUBSCRIBER_RECEIVE]: any;
 }
 
 /**发送消息的数据处理类型映射 */
