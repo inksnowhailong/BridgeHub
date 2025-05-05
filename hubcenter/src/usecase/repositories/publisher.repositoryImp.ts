@@ -78,4 +78,8 @@ export class PublisherRepositoryPgsql extends PublisherRepository {
       throw new UnauthorizedException('身份验证失败');
     return publisher;
   }
+
+  async deletePublisher(publisher: PublisherEntity): Promise<void> {
+    await this.repository.remove(publisher);
+  }
 }

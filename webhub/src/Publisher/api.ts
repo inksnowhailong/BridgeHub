@@ -42,4 +42,12 @@ export class PublisherApi extends AsyncBase {
       data,
     });
   };
+
+  deletePublisher = async (id: string) => {
+    return await this.request({
+      url: `${this.BASE_URL}/delete`,
+      method: "POST",
+      data: { id },
+    });
+  };
 }

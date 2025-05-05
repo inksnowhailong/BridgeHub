@@ -13,7 +13,17 @@ const MainLayout: React.FC = () => {
     type: string;
     data: any;
     timestamp: number;
-  }>>([]);
+    publisherId?: string;
+  }>>([ {
+    type: "PUBLISHER_CONNECT",
+    data: {
+      deviceId: "device123",
+      serverName: "测试服务器",
+      status: "active"
+    },
+    timestamp: Date.now(),
+    publisherId: "pub_123456"
+  }]);
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -22,17 +32,18 @@ const MainLayout: React.FC = () => {
 
   // 初始化 WebSocket 连接
   React.useEffect(() => {
-    const wsServer = 'ws://localhost:3000'; // 从配置中获取
+    const wsServer = 'http://localhost:3080/web'; // 从配置中获取
     const ws = new Websocket(wsServer);
 
-    // 监听所有消息
-    ws.socket.on('message', (message: any) => {
-      setMessages(prev => [...prev, {
-        type: message.type,
-        data: message.data,
-        timestamp: Date.now(),
-      }]);
-    });
+   // 使用封装好的方法
+  ws.onMessage((message: any) => {
+    setMessages(prev => [...prev, {
+      type: message.type,
+      data: message.data,
+      timestamp: Date.now(),
+      publisherId: message.publisherId
+    }]);
+  });
 
     return () => {
       ws.socket.disconnect();
@@ -90,10 +101,12 @@ const MainLayout: React.FC = () => {
             <Outlet />
           </Content>
           <Sider
-            width={300}
+            width={400}
+            className="bg-white"
             style={{
-              background: colorBgContainer,
-              padding: '24px',
+              padding: '12px',
+              height: 'calc(100vh - 64px)',
+              overflow: 'hidden'
             }}
           >
             <MessageLog messages={messages} />

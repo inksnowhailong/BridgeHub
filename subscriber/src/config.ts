@@ -26,8 +26,8 @@ async function loopCommand() {
 
       0:退出
       1:设置互联中心地址
-      3:读取配置
-      4:清空配置
+      2:读取配置
+      3:清空配置
 
       `,
     },
@@ -40,12 +40,11 @@ async function loopCommand() {
     case 1:
       await setHubCenter();
       break;
-      break;
-    case 3:
+    case 2:
       console.log(getAllConfig());
 
       break;
-    case 4:
+    case 3:
       clearConfig();
       break;
     default:
@@ -68,8 +67,7 @@ async function setHubCenter() {
 
 export function getAllConfig() {
   const hubCenter = config.get("hubCenter");
-  const apiDocUrl = config.get("apiDocUrl");
-  return { hubCenter, apiDocUrl };
+  return { hubCenter};
 }
 
 function clearConfig() {

@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 export class Websocket {
   socket: Socket;
   socketAwait: Promise<Socket>;
-  constructor(wsServer: string = "http://localhost:3080/publisher") {
+  constructor(wsServer: string = "http://localhost:3080/nodeCli") {
     this.socket = io(wsServer);
     this.socketAwait = new Promise((resolve) => {
       this.socket.on("connect", () => {

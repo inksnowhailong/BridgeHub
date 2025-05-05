@@ -45,4 +45,11 @@ export abstract class PublisherRepository {
   abstract getListByPage(
     pageParams: PaginationParams
   ): Promise<PaginationResult<PublisherEntity[]>>;
+
+  /**
+   * @description: 删除发布者
+   * @param {PublisherEntity} publisher
+   * @return {*}
+   */
+  abstract deletePublisher(publisher: PublisherEntity): Promise<void>;
 }

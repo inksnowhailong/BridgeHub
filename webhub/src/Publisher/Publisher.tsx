@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { PublisherApi } from "./api";
 import request from "@/utils/request";
-import { Space, Switch, Table, TableProps, Tag } from "antd";
+import { Button, Space, Switch, Table, TableProps, Tag, Form, Modal, Input, Select, Popconfirm, message } from "antd";
 import { PublisherEntity, PublisherStatus } from "./entities";
 import { PaginationParams } from "@/common/abstract/Pagination.dto";
 
@@ -15,6 +15,8 @@ export default function Publisher() {
     currentPage: 1,
   });
   const [total, setTotal] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [form] = Form.useForm();
 
   const columns: TableProps<PublisherEntity>["columns"] = [
     {
@@ -47,7 +49,7 @@ export default function Publisher() {
         <Space>
           <Switch
             checkedChildren="开启"
-            unCheckedChildren="关闭"
+            unCheckedChildren="禁用"
             checked={status !== PublisherStatus.DISABLE}
             onChange={() => updatePublisherStatus(id, status)}
             loading={loading.includes(id)}
@@ -73,29 +75,52 @@ export default function Publisher() {
       ),
     },
     {
-      title: "Action",
+      title: "操作",
       key: "action",
-      render: (_, record) => <Space size="middle"></Space>,
+      render: (_, record) => (
+        <Space size="middle">
+          <Popconfirm
+            title="确定要删除这个发布者吗？"
+            onConfirm={() => handleDelete(record.id)}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button type="link" danger>
+              删除
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
-  const createPublisher = async () => {
-    const res = await Api.createPublisher({
-      serverName: "测试发布者",
-      gitUrl: "https://github.com/inksnowhailong/BridgeHub.git",
-      authData: "no",
-      deviceId: "iid",
-      serverType: "node",
-      customData: "{}",
-    });
-    console.log(res);
+  const openModal = () => {
+    setModalVisible(true);
   };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    form.resetFields();
+  };
+
+  const handleCreate = async () => {
+    try {
+      const values = await form.validateFields();
+      const res = await Api.createPublisher(values);
+      closeModal();
+      getPublisherList();
+    } catch (e) {
+      // 校验失败
+    }
+  };
+
   const getPublisherList = async () => {
     const res = await Api.getPublisherList(pageParams);
     console.log("res :>> ", res);
     setData(res.data.data);
     setTotal(res.data.Pagination.totalCount);
   };
+
   const updatePublisherStatus = async (id: string, status: PublisherStatus) => {
     setLoading((loading) => [...loading, id]);
     const res = await Api.updatePublisherStatus({
@@ -108,12 +133,87 @@ export default function Publisher() {
     setLoading((loading) => loading.filter((item) => item !== id));
     getPublisherList();
   };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await Api.deletePublisher(id);
+      message.success('删除成功');
+      getPublisherList();
+    } catch (error) {
+      message.error('删除失败');
+    }
+  };
+
   useEffect(() => {
     getPublisherList();
   }, [pageParams]);
+
   return (
     <>
-      <button onClick={createPublisher}>createPublisher</button>
+      {/* <Button onClick={openModal}>创建发布者</Button> */}
+      <Modal
+        title="创建发布者"
+        open={modalVisible}
+        onOk={handleCreate}
+        onCancel={closeModal}
+        destroyOnClose
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{
+            serverType: "node",
+            customData: "{}",
+          }}
+        >
+          <Form.Item
+            label="服务名称"
+            name="serverName"
+            rules={[{ required: true, message: "请输入服务名称" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Git 地址"
+            name="gitUrl"
+            rules={[{ required: true, message: "请输入Git地址" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="认证信息"
+            name="authData"
+            rules={[{ required: true, message: "请输入认证信息" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="设备ID"
+            name="deviceId"
+            rules={[{ required: true, message: "请输入设备ID" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="服务类型"
+            name="serverType"
+            rules={[{ required: true, message: "请选择服务类型" }]}
+          >
+            <Select>
+              <Select.Option value="node">Node</Select.Option>
+              <Select.Option value="python">Python</Select.Option>
+              {/* 其他类型可自行添加 */}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="自定义数据"
+            name="customData"
+            rules={[{ required: true, message: "请输入自定义数据" }]}
+          >
+            <Input.TextArea />
+          </Form.Item>
+        </Form>
+      </Modal>
       <Table<PublisherEntity>
         rowKey={(record) => record.id}
         columns={columns}

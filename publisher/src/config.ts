@@ -76,7 +76,7 @@ async function setApiUrl() {
       type: "input",
       name: "url",
       message: `请输入swagger文档的json数据地址.
-          示例：http://localhost:3000/v2/api-docs`,
+          示例：http://localhost:3080/v2/api-docs`,
     },
   ]);
   config.set("apiDocUrl", url);

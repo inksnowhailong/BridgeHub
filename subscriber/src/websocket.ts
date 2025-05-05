@@ -6,7 +6,7 @@ export class Websocket {
   private socket: any;
   private messageHandlers: Map<string, Function> = new Map();
 
-  constructor(url: string) {
+  constructor(url: string = "http://localhost:3080/nodeCli") {
     this.socket = io(url);
     this.setupMessageHandlers();
   }

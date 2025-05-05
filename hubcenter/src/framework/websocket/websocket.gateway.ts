@@ -34,7 +34,7 @@ nestException.LinkErrhandlers([
 ]);
 
 @Injectable()
-@WebSocketGateway(3080, { namespace: 'publisher' })
+@WebSocketGateway(3080, { namespace: 'nodeCli' })
 @UseFilters(new WebSocketFilter(nestException))
 export class WsGateway
   extends MessagePlatform

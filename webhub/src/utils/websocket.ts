@@ -5,7 +5,10 @@ export class Websocket {
   public socket: any;
 
   constructor(url: string) {
-    this.socket = io(url);
+    this.socket =  io(url, {
+      transports: ['websocket'], // 确保支持 polling
+      withCredentials: true
+    });
   }
 
   emit(type: MessageType | 'message', data: any, callback?: (res: ResponseDTO) => void) {

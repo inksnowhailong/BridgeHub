@@ -22,7 +22,7 @@ import { DataSource } from 'typeorm';
 @Injectable()
 export class SubscriberService extends SubscriberRepositoryPgsql {
   constructor(
-    @Inject('PGSQL_DATA_SOURCE')
+    @Inject('SQLITE_DATA_SOURCE')
     private readonly dataSource: DataSource
   ) {
     super(

@@ -93,4 +93,16 @@ export class PublisherService extends PublisherRepositoryPgsql {
       return await this.updatePublisher(publisher);
     }
   }
+
+  /**
+   * @description: 删除发布者
+   * @param {string} id 发布者ID
+   * @return {*}
+   */
+  async removePublisher(id: string): Promise<void> {
+    const publisher = await this.getPublisherById(id);
+    if (publisher) {
+      await this.deletePublisher(publisher);
+    }
+  }
 }

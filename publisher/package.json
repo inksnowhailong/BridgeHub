@@ -2,12 +2,12 @@
   "name": "hub-publisher-cli",
   "version": "1.0.0",
   "description": "发布者",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "bin": {
     "hp": "./dist/index.js"
   },
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "node --loader ts-node/esm src/index.ts",
     "build": "node esbuild.config.mjs",
     "dev": "node esbuild.config.mjs --watch",
     "watch": "tsc -w",

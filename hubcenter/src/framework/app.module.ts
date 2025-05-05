@@ -11,11 +11,12 @@ import { PublisherModule } from '../infrastructure/publisher/publisher.module';
 import { SubscriberModule } from '../infrastructure/subscriber/subscriber.module';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { WsGateway } from './websocket/websocket.gateway';
+import { WsGatewayWeb } from './websocket/websocket_web.gateway';
 
 @Module({
   imports: [DatabaseModule, PublisherModule, SubscriberModule],
   controllers: [AppController],
-  providers: [AppService, WsGateway]
+  providers: [AppService, WsGateway, WsGatewayWeb]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

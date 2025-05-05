@@ -1,0 +1,40 @@
+@startuml BridgeHub Architecture
+
+package "src" {
+    package "framework" {
+        note right of framework
+            框架层：提供核心功能和通用模块
+        end note
+    }
+
+    package "infrastructure" {
+        note right of infrastructure
+            基础设施层：处理外部请求和业务逻辑
+        end note
+    }
+
+    package "domain" {
+        note right of domain
+            领域层：定义核心业务实体和接口
+        end note
+    }
+
+    package "usecase" {
+        note right of usecase
+            用例层：实现具体的业务逻辑
+        end note
+    }
+    database "Database" {
+        note right of Database
+            数据持久化存储
+        end note
+    }
+}
+
+framework -down-> infrastructure
+infrastructure -down-> domain
+infrastructure -down-> usecase
+usecase -down-> domain
+usecase -down-> Database
+
+@enduml

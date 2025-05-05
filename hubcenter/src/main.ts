@@ -24,6 +24,7 @@ async function bootstrap() {
       transform: true
     })
   );
+
   app.useGlobalInterceptors(new RequestInterceptor());
 
   const nestException = new NestException();

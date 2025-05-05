@@ -22,7 +22,7 @@ const Subscribers: React.FC = () => {
   const [socket, setSocket] = useState<Websocket | null>(null);
 
   useEffect(() => {
-    const wsServer = 'ws://localhost:3000'; // 从配置中获取
+    const wsServer = 'ws://localhost:3080'; // 从配置中获取
     const ws = new Websocket(wsServer);
     setSocket(ws);
 

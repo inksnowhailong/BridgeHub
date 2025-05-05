@@ -45,4 +45,9 @@ export class PublisherController {
   ): Promise<PublisherEntity> {
     return this.publisherService.updatePublisherStatus(params);
   }
+
+  @Post('delete')
+  async deletePublisher(@Body() params: { id: string }): Promise<void> {
+    return this.publisherService.removePublisher(params.id);
+  }
 }
