@@ -33,6 +33,32 @@ export const MessageLog: React.FC<MessageLogProps> = ({ messages }) => {
     setSelectedMessage(null);
   };
 
+  const timelineItems = messages.map((message, index) => ({
+    key: index,
+    dot: <ClockCircleOutlined className="text-base text-blue-400" />,
+    children: (
+      <div className="bg-gray-50 rounded shadow-sm p-3 mt-2">
+        <div className="flex flex-wrap items-center text-xs text-gray-500 mb-1">
+          <span>{new Date(message.timestamp).toLocaleString()}</span>
+          {message.publisherId && (
+            <span className="ml-4">发布者ID: {message.publisherId}</span>
+          )}
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="font-bold text-base">{MessageType[message.type as keyof typeof MessageType] || message.type}</span>
+          <Button
+            type="link"
+            icon={<InfoCircleOutlined />}
+            onClick={() => showMessageDetail(message)}
+            className="px-1"
+          >
+            查看详情
+          </Button>
+        </div>
+      </div>
+    )
+  }));
+
   return (
     <Card
       title="实时消息日志"
@@ -48,34 +74,7 @@ export const MessageLog: React.FC<MessageLogProps> = ({ messages }) => {
         ref={listRef}
         className="h-full overflow-auto px-3"
       >
-        <Timeline>
-          {messages.map((message, index) => (
-            <Timeline.Item
-              key={index}
-              dot={<ClockCircleOutlined className="text-base text-blue-400" />}
-            >
-              <div className="bg-gray-50 rounded shadow-sm p-3 mt-2">
-                <div className="flex flex-wrap items-center text-xs text-gray-500 mb-1">
-                  <span>{new Date(message.timestamp).toLocaleString()}</span>
-                  {message.publisherId && (
-                    <span className="ml-4">发布者ID: {message.publisherId}</span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-base">{MessageType[message.type as keyof typeof MessageType] || message.type}</span>
-                  <Button
-                    type="link"
-                    icon={<InfoCircleOutlined />}
-                    onClick={() => showMessageDetail(message)}
-                    className="px-1"
-                  >
-                    查看详情
-                  </Button>
-                </div>
-              </div>
-            </Timeline.Item>
-          ))}
-        </Timeline>
+        <Timeline items={timelineItems} />
       </div>
 
       <Modal

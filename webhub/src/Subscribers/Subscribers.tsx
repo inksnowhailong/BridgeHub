@@ -13,6 +13,40 @@ interface Subscriber {
   subscribedPublishers: string[];
 }
 
+// 模拟数据
+const mockSubscribers: Subscriber[] = [
+  {
+    id: '1',
+    serverName: '测试订阅者1',
+    status: 'active',
+    deviceId: 'DEVICE_001',
+    serverType: 'node',
+    subscribedPublishers: ['pub1', 'pub2']
+  },
+  {
+    id: '2',
+    serverName: '测试订阅者2',
+    status: 'connecting',
+    deviceId: 'DEVICE_002',
+    serverType: 'java',
+    subscribedPublishers: ['pub1']
+  },
+  {
+    id: '3',
+    serverName: '测试订阅者3',
+    status: 'disconnected',
+    deviceId: 'DEVICE_003',
+    serverType: 'python',
+    subscribedPublishers: ['pub2', 'pub3']
+  }
+];
+
+const mockPublishers = [
+  { id: 'pub1', serverName: '发布者1' },
+  { id: 'pub2', serverName: '发布者2' },
+  { id: 'pub3', serverName: '发布者3' }
+];
+
 const Subscribers: React.FC = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [publishers, setPublishers] = useState<Array<{ id: string; serverName: string }>>([]);
@@ -22,29 +56,13 @@ const Subscribers: React.FC = () => {
   const [socket, setSocket] = useState<Websocket | null>(null);
 
   useEffect(() => {
-    const wsServer = 'ws://localhost:3080'; // 从配置中获取
+    // 使用模拟数据
+    setSubscribers(mockSubscribers);
+    setPublishers(mockPublishers);
+
+    const wsServer = 'ws://localhost:3080';
     const ws = new Websocket(wsServer);
     setSocket(ws);
-
-    // 获取订阅者列表
-    ws.emit('message', {
-      type: MessageType.SUBSCRIBER_LIST,
-      data: {},
-    }, (res: any) => {
-      if (res.data) {
-        setSubscribers(res.data);
-      }
-    });
-
-    // 获取发布者列表
-    ws.emit('message', {
-      type: MessageType.PUBLISHER_LIST,
-      data: {},
-    }, (res: any) => {
-      if (res.data) {
-        setPublishers(res.data);
-      }
-    });
 
     return () => {
       ws.socket.disconnect();

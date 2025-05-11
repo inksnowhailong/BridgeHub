@@ -72,7 +72,7 @@ async function createsubscriber(socket: Websocket) {
   const deviceId = await getDeviceId();
   const { wait, next } = useWait();
   const message = {
-    type: MessageType.SUBSCRIBER_CREATE,
+    messageType: MessageType.SUBSCRIBER_CREATE,
     data: {
       serverName: "nodetest " + new Date().toLocaleDateString(),
       gitUrl: "https://github.com/inksnowhailong/BridgeHub.git",
@@ -109,7 +109,7 @@ async function subscribePublisher(socket: Websocket) {
 
   const { wait, next } = useWait();
   const message = {
-    type: MessageType.SUBSCRIBER_SUBSCRIBE,
+    messageType: MessageType.SUBSCRIBER_SUBSCRIBE,
     data: {
       publisherId,
     },
@@ -141,7 +141,7 @@ async function unsubscribePublisher(socket: Websocket) {
 
   const { wait, next } = useWait();
   const message = {
-    type: MessageType.SUBSCRIBER_UNSUBSCRIBE,
+    messageType: MessageType.SUBSCRIBER_UNSUBSCRIBE,
     data: {
       publisherId,
     },
@@ -165,7 +165,7 @@ async function unsubscribePublisher(socket: Websocket) {
 async function listPublishers(socket: Websocket) {
   const { wait, next } = useWait();
   const message = {
-    type: MessageType.PUBLISHER_LIST,
+    messageType: MessageType.PUBLISHER_LIST,
     data: {},
   };
   socket.emit(

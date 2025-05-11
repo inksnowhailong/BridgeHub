@@ -83,6 +83,8 @@ export class WsGateway
     @ConnectedSocket() client: Socket
   ): Promise<any> {
     this.clientMap.set(client.id, client);
+    console.log(data);
+
     const res = await this.handleMessageFromClient(data, client.id);
     return res;
   }
@@ -154,6 +156,8 @@ export class WsGateway
     message: T,
     clientFindKey: string
   ) {
+    console.log(message.messageType);
+
     switch (message.messageType) {
       // 发布者相关消息
       case MessageType.PUBLISHER_CREATE:
