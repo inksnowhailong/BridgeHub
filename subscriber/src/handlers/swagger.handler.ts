@@ -7,7 +7,8 @@ import fs from 'fs';
  */
 export function handleSwaggerDoc(data: any): void {
   try {
-    const { basePath, paths } = data;
+    let { basePath, paths } = data;
+    paths = JSON.parse(paths)
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `docs/swagger-doc-${timestamp}.json`;
 

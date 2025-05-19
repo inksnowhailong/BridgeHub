@@ -23,6 +23,7 @@ import {
   DefaultErrorHandler
 } from 'src/shared/exception/ErrorHandlers';
 import { WebSocketFilter } from '../exception/websocket.exception';
+import { globalMap } from './ClientMap';
 
 const nestException = new NestException();
 nestException.LinkErrhandlers([
@@ -34,10 +35,11 @@ nestException.LinkErrhandlers([
 @WebSocketGateway(3080, {
   namespace: 'web',
   cors: {
-    origin: '*', // 允许的前端地址
+    origin: '*',
+    methods: '*',
     credentials: true
   },
-  transports: ['websocket']
+  transports: ['websocket', 'polling']
 })
 @UseFilters(new WebSocketFilter(nestException))
 export class WsGatewayWeb
@@ -45,7 +47,7 @@ export class WsGatewayWeb
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer() server: Server;
-  private clientMap = new Map<string, Socket>();
+  private clientMap = globalMap;
   private clientMapByName = new Map<string, Socket>();
   private logger: Logger = new Logger('WebSocketGateway');
 
@@ -71,11 +73,18 @@ export class WsGatewayWeb
    * @return {*}
    */
   handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`有服务建立了链接: ${client.id}`);
+    this.clientMap.set(`web-${Date.now()}`, client);
+    this.logger.log(`WEB设备 建立了链接: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.log(`有服务关闭了链接: ${client.id}`);
+    const deviceId = client.handshake.query.deviceId as string;
+    if (deviceId) {
+      this.clientMap.delete(deviceId);
+      this.logger.log(`设备 ${deviceId} 关闭了链接: ${client.id}`);
+    } else {
+      this.logger.warn(`未知设备关闭了链接: ${client.id}`);
+    }
   }
   /**
    * @description: 接收消息

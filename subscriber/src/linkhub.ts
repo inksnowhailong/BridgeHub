@@ -80,7 +80,8 @@ async function createsubscriber(socket: Websocket) {
       deviceId: deviceId,
       serverType: "node",
       customData: "{}",
-    },
+      createdAt: Date.now()
+          },
   };
   socket.emit(
     "message",
@@ -106,11 +107,12 @@ async function subscribePublisher(socket: Websocket) {
       message: "请输入要订阅的发布者ID:",
     },
   ]);
-
+const deviceId = await getDeviceId()
   const { wait, next } = useWait();
   const message = {
     messageType: MessageType.SUBSCRIBER_SUBSCRIBE,
     data: {
+      deviceId,
       publisherId,
     },
   };

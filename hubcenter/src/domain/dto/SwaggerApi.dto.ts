@@ -49,4 +49,5 @@ export interface Path {
 export interface ApiJsonDTO {
   paths: { [path: string]: Path };
   basePath: string;
+  deviceId;
 }

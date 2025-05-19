@@ -6,11 +6,9 @@ import {
 import {
   SubscriberCreateParamsDTO,
   SubscriberConnectDTO,
-  SubscriberUpdateStatusDTO,
-  SubscriptionDTO
+  SubscriberUpdateStatusDTO
 } from '../../domain/dto/subscriber.dto';
 import { SubscriberEntity } from '../../domain/entities/subscriber.entity';
-import { SubscriptionEntity } from '../../domain/entities/subscription.entity';
 import { SubscriberStatus } from '../../domain/enum/subscriber.enum';
 import { SubscriberRepositoryPgsql } from '../../usecase/repositories/subscriber.repositoryImp';
 import { DataSource } from 'typeorm';
@@ -22,13 +20,10 @@ import { DataSource } from 'typeorm';
 @Injectable()
 export class SubscriberService extends SubscriberRepositoryPgsql {
   constructor(
-    @Inject('SQLITE_DATA_SOURCE')
+    @Inject('PGSQL_DATA_SOURCE')
     private readonly dataSource: DataSource
   ) {
-    super(
-      dataSource.getRepository(SubscriberEntity),
-      dataSource.getRepository(SubscriptionEntity)
-    );
+    super(dataSource.getRepository(SubscriberEntity));
   }
 
   async addSubscriber(
@@ -70,22 +65,18 @@ export class SubscriberService extends SubscriberRepositoryPgsql {
       params.deviceId,
       params.authData
     );
-    subscriber.status = SubscriberStatus.ACTIVE;
     subscriber.lastConnectedAt = Date.now();
+    subscriber.status = SubscriberStatus.OPEN;
     return this.updateSubscriber(subscriber);
   }
 
   /**
    * @description: 停止与订阅者的连接
    * @param {string} deviceId
-   * @param {string} authData
    * @return {*}
    */
-  async disconnectSubscriber(
-    deviceId: string,
-    authData: string
-  ): Promise<SubscriberEntity> {
-    const subscriber = await this.getSubscriberByDeviceId(deviceId, authData);
+  async disconnectSubscriber(deviceId: string): Promise<SubscriberEntity> {
+    const subscriber = await this.getSubscriberByDeviceId(deviceId, '');
     subscriber.status = SubscriberStatus.CLOSE;
     return this.updateSubscriber(subscriber);
   }
@@ -93,18 +84,22 @@ export class SubscriberService extends SubscriberRepositoryPgsql {
   /**
    * @description: 订阅发布者
    * @param {string} publisherId
+   * @param {string} deviceId
    * @return {*}
    */
-  async subscribePublisher(publisherId: string): Promise<SubscriberEntity> {
-    const subscriber = await this.getCurrentSubscriber();
+  async subscribePublisher(
+    publisherId: string,
+    deviceId: string
+  ): Promise<SubscriberEntity> {
+    const subscriber = await this.getSubscriberByDeviceId(deviceId, '');
     if (!subscriber) {
       throw new Error('未找到当前订阅者');
     }
 
-    const publisherIds = JSON.parse(subscriber.publisherIds || '[]');
+    const publisherIds = (subscriber.publisherIds || '').split(',');
     if (!publisherIds.includes(publisherId)) {
       publisherIds.push(publisherId);
-      subscriber.publisherIds = JSON.stringify(publisherIds);
+      subscriber.publisherIds = publisherIds.join(',');
       return this.updateSubscriber(subscriber);
     }
     return subscriber;
@@ -113,19 +108,23 @@ export class SubscriberService extends SubscriberRepositoryPgsql {
   /**
    * @description: 取消订阅发布者
    * @param {string} publisherId
+   * @param {string} deviceId
    * @return {*}
    */
-  async unsubscribePublisher(publisherId: string): Promise<SubscriberEntity> {
-    const subscriber = await this.getCurrentSubscriber();
+  async unsubscribePublisher(
+    publisherId: string,
+    deviceId: string
+  ): Promise<SubscriberEntity> {
+    const subscriber = await this.getSubscriberByDeviceId(deviceId, '');
     if (!subscriber) {
       throw new Error('未找到当前订阅者');
     }
 
-    const publisherIds = JSON.parse(subscriber.publisherIds || '[]');
+    const publisherIds = (subscriber.publisherIds || '').split(',');
     const index = publisherIds.indexOf(publisherId);
     if (index > -1) {
       publisherIds.splice(index, 1);
-      subscriber.publisherIds = JSON.stringify(publisherIds);
+      subscriber.publisherIds = publisherIds.join(',');
       return this.updateSubscriber(subscriber);
     }
     return subscriber;
@@ -135,9 +134,8 @@ export class SubscriberService extends SubscriberRepositoryPgsql {
    * @description: 获取当前订阅者
    * @return {*}
    */
-  private async getCurrentSubscriber(): Promise<SubscriberEntity> {
-    // 这里需要根据实际情况获取当前订阅者
-    // 例如通过设备ID或其他标识
+  private async getCurrentSubscriber(): Promise<SubscriberEntity | null> {
+    // TODO: 实现获取当前订阅者的逻辑
     return null;
   }
 
@@ -148,7 +146,7 @@ export class SubscriberService extends SubscriberRepositoryPgsql {
    */
   async getSubscribedPublishers(id: string): Promise<any[]> {
     const subscriber = await this.getSubscriberById(id);
-    const publisherIds = JSON.parse(subscriber.publisherIds || '[]');
+    const publisherIds = JSON.parse(subscriber.publisherIds || '');
     return publisherIds;
   }
 
@@ -161,39 +159,11 @@ export class SubscriberService extends SubscriberRepositoryPgsql {
     return this.getSubscriberById(id);
   }
 
-  /**
-   * @description: 创建订阅关系
-   * @param {SubscriptionDTO} subscription
-   * @return {*}
-   */
-  async createSubscription(
-    subscription: SubscriptionDTO
-  ): Promise<SubscriptionEntity> {
-    const subscriber = await this.getSubscriberById(subscription.subscriberId);
-    const publisherIds = JSON.parse(subscriber.publisherIds || '[]');
-    if (!publisherIds.includes(subscription.publisherId)) {
-      publisherIds.push(subscription.publisherId);
-      subscriber.publisherIds = JSON.stringify(publisherIds);
-      await this.updateSubscriber(subscriber);
+  async deleteSubscriber(id: string): Promise<void> {
+    const subscriber = await this.getSubscriberById(id);
+    if (!subscriber) {
+      throw new Error('未找到订阅者');
     }
-    return {
-      id: `${subscription.subscriberId}-${subscription.publisherId}`,
-      subscriberId: subscription.subscriberId,
-      publisherId: subscription.publisherId,
-      createdAt: subscription.createdAt
-    };
-  }
-
-  /**
-   * @description: 取消订阅关系
-   * @param {string} subscriberId
-   * @param {string} publisherId
-   * @return {*}
-   */
-  async cancelSubscription(
-    subscriberId: string,
-    publisherId: string
-  ): Promise<void> {
-    await this.unsubscribePublisher(publisherId);
+    await this.dataSource.getRepository(SubscriberEntity).delete(id);
   }
 }

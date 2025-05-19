@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Layout, Menu, theme } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { MessageLog } from '../common/MessageLog';
-import { MessageType } from '../types/message';
 import { Websocket } from '../utils/websocket';
 
 const { Header, Content, Sider } = Layout;
@@ -14,16 +13,7 @@ const MainLayout: React.FC = () => {
     data: any;
     timestamp: number;
     publisherId?: string;
-  }>>([ {
-    type: "PUBLISHER_CONNECT",
-    data: {
-      deviceId: "device123",
-      serverName: "测试服务器",
-      status: "active"
-    },
-    timestamp: Date.now(),
-    publisherId: "pub_123456"
-  }]);
+  }>>([ ]);
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -37,16 +27,17 @@ const MainLayout: React.FC = () => {
 
    // 使用封装好的方法
   ws.onMessage((message: any) => {
+    console.log(message);
+
     setMessages(prev => [...prev, {
-      type: message.type,
+      type: message.messageType,
       data: message.data,
-      timestamp: Date.now(),
-      publisherId: message.publisherId
+      timestamp: Date.now()
     }]);
   });
 
     return () => {
-      ws.socket.disconnect();
+      ws.disconnect();
     };
   }, []);
 

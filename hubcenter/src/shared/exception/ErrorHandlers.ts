@@ -49,6 +49,8 @@ export class TypeormExceptionErrorHandler extends BaseErrorHandler {
 
   codeToMessage(code: string): { status: number; message: string } {
     let message, status;
+    console.log(message);
+
     switch (code) {
       case '23505':
         message = '服务重复注册';
@@ -104,6 +106,8 @@ export class TypeormExceptionErrorHandler extends BaseErrorHandler {
  */
 export class DefaultErrorHandler extends BaseErrorHandler {
   transformError(error: Error, result: IException<any>): IException<any> {
+    console.log(error);
+
     if (!result.code) {
       const status = HttpStatus.INTERNAL_SERVER_ERROR;
       const message = 'Internal Server Error';

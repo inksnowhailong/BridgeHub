@@ -42,7 +42,6 @@ async function loopCommand(socket: Websocket) {
       `,
     },
   ]);
-
   switch (Number(code)) {
     case 0:
       await linkHub.Command?.help();
@@ -140,13 +139,19 @@ async function sendAPIJson(socket: Websocket) {
         }
       });
     });
+    const deviceId = await getDeviceId()
+    console.log(deviceId);
+
     socket.emit("message", {
       messageType: MessageEnum.PUBLISHER_API_JSON,
       data: {
         basePath,
-        paths,
+        paths:JSON.stringify(paths),
+        deviceId
       },
     });
+    console.log("发送成功");
+
   } catch (error) {
     console.log("error :>> ", error);
   }

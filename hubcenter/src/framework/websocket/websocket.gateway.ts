@@ -26,6 +26,8 @@ import {
 } from 'src/shared/exception/ErrorHandlers';
 import { WebSocketFilter } from '../exception/websocket.exception';
 import { ResponseDTO } from 'src/domain/dto/response.dto';
+import { PaginationParams } from 'src/domain/dto/Pagination.dto';
+import { globalMap } from './ClientMap';
 
 const nestException = new NestException();
 nestException.LinkErrhandlers([
@@ -41,13 +43,13 @@ export class WsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer() server: Server;
-  private clientMap = new Map<string, Socket>();
+  private clientMap = globalMap;
   private clientMapByName = new Map<string, Socket>();
   private logger: Logger = new Logger('WebSocketGateway');
 
   constructor(
-    private publisherService: PublisherService,
-    private subscriberService: SubscriberService
+    private readonly publisherService: PublisherService,
+    private readonly subscriberService: SubscriberService
   ) {
     super();
   }
@@ -67,11 +69,23 @@ export class WsGateway
    * @return {*}
    */
   handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`有服务建立了链接: ${client.id}`);
+    const deviceId = client.handshake.query.deviceId as string;
+    if (deviceId) {
+      this.clientMap.set(deviceId, client);
+      this.logger.log(`设备 ${deviceId} 建立了链接: ${client.id}`);
+    } else {
+      this.logger.warn(`未知设备建立了链接: ${client.id}`);
+    }
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.log(`有服务关闭了链接: ${client.id}`);
+    const deviceId = client.handshake.query.deviceId as string;
+    if (deviceId) {
+      this.clientMap.delete(deviceId);
+      this.logger.log(`设备 ${deviceId} 关闭了链接: ${client.id}`);
+    } else {
+      this.logger.warn(`未知设备关闭了链接: ${client.id}`);
+    }
   }
   /**
    * @description: 接收消息
@@ -82,10 +96,17 @@ export class WsGateway
     @MessageBody() data: MessageDTO,
     @ConnectedSocket() client: Socket
   ): Promise<any> {
-    this.clientMap.set(client.id, client);
-    console.log(data);
+    const id = client.id;
+    // 遍历所有客户端连接
+    for (const [key, webClient] of this.clientMap.entries()) {
+      // 检查是否是web客户端
+      if (key.startsWith('web-')) {
+        // 发送消息到web客户端
+        webClient.emit('message', data);
+      }
+    }
+    const res = await this.handleMessageFromClient(data, id);
 
-    const res = await this.handleMessageFromClient(data, client.id);
     return res;
   }
   /**向特定客户端发送消息 */
@@ -102,18 +123,18 @@ export class WsGateway
   /**
    * @description: 发送消息到客户端
    * @param {T} message
-   * @param {string} clientFindKey
+   * @param {string} targetKey
    * @return {*}
    */
-  sendMessageToClient<T extends SendDTO>(message: T, clientFindKey: string) {
+  sendMessageToClient<T extends SendDTO>(message: T, targetKey: string) {
     switch (message.messageType) {
       case SendType.PUBLISHER_CLOSE:
       case SendType.SUBSCRIBER_CLOSE:
-        this.sendMessage(clientFindKey, message.data);
+        this.sendMessage(targetKey, message.data);
         break;
       case SendType.PUBLISHER_MESSAGE:
         // 发送发布者的消息到订阅该发布者的所有订阅者
-        this.sendPublisherMessageToSubscribers(message, clientFindKey);
+        this.sendPublisherMessageToSubscribers(message, targetKey);
         break;
       default:
         break;
@@ -125,24 +146,30 @@ export class WsGateway
    */
   async sendPublisherMessageToSubscribers<T extends SendDTO>(
     message: T,
-    publisherId: string
+    publisherDeviceId: string
   ) {
     // 获取所有订阅该发布者的订阅者
-    const subscriptions =
-      await this.subscriberService[
-        'subscriberRepository'
-      ].getSubscriptionsByPublisherId(publisherId);
+    const page = new PaginationParams();
+    page.pageSize = 999;
+    const subscriptions = await this.subscriberService.getSubscriberList(page);
+    for (const subscription of subscriptions.data) {
+      const PublisherEntity =
+        await this.publisherService.getPublisherByDeviceId(
+          publisherDeviceId,
+          ''
+        );
+      const publisherId = PublisherEntity.id;
+      if (!subscription.publisherIds.includes(publisherId)) {
+        return;
+      }
+      console.log(this.clientMap);
 
-    // 向每个订阅者发送消息
-    for (const subscription of subscriptions) {
-      const subscriberClient = this.clientMap.get(subscription.subscriberId);
+      const subscriberClient = this.clientMap.get(subscription.deviceId);
+
       if (subscriberClient) {
         subscriberClient.emit('message', {
-          messageType: 'PUBLISHER_MESSAGE',
-          data: {
-            publisherId,
-            content: message.data
-          }
+          messageType: MessageType.PUBLISHER_API_JSON,
+          data: message.data
         });
       }
     }
@@ -170,9 +197,12 @@ export class WsGateway
         );
         return new ResponseDTO(200, '创建成功', res);
       case MessageType.PUBLISHER_API_JSON:
-        const apijson =
-          message.data as MessageDataDTO[MessageType.PUBLISHER_API_JSON];
-        console.log('apijson :>> ', apijson);
+        const apijson: SendDTO = {
+          messageType: SendType.PUBLISHER_MESSAGE,
+          data: message.data as MessageDataDTO[MessageType.PUBLISHER_API_JSON]
+        };
+
+        this.sendMessageToClient(apijson, message.data.deviceId);
         break;
       case MessageType.PUBLISHER_START:
         const publisherDeviceId =
@@ -208,8 +238,7 @@ export class WsGateway
         const subStopData =
           message.data as MessageDataDTO[MessageType.SUBSCRIBER_CLOSE];
         const subStopRes = await this.subscriberService.disconnectSubscriber(
-          subStopData.deviceId,
-          subStopData.authData
+          subStopData.deviceId
         );
         return new ResponseDTO(200, '关闭订阅者成功', subStopRes);
 
@@ -218,16 +247,20 @@ export class WsGateway
         const subscriptionData =
           message.data as MessageDataDTO[MessageType.SUBSCRIBER_SUBSCRIBE];
         const subScribeRes = await this.subscriberService.subscribePublisher(
-          subscriptionData.publisherId
+          subscriptionData.publisherId,
+          subscriptionData.deviceId
         );
         return new ResponseDTO(200, '订阅成功', subScribeRes);
+
       case MessageType.SUBSCRIBER_UNSUBSCRIBE:
         const unsubscriptionData =
           message.data as MessageDataDTO[MessageType.SUBSCRIBER_UNSUBSCRIBE];
         const unsubRes = await this.subscriberService.unsubscribePublisher(
-          unsubscriptionData.publisherId
+          unsubscriptionData.publisherId,
+          clientFindKey
         );
         return new ResponseDTO(200, '取消订阅成功', unsubRes);
+
       case MessageType.PUBLISHER_LIST:
         const publishers = await this.publisherService.getPublisherList({
           pageSize: 100,
@@ -237,5 +270,12 @@ export class WsGateway
       default:
         return new ResponseDTO(400, '未知的消息类型', null);
     }
+  }
+
+  @SubscribeMessage('subscriber:stop')
+  async handleSubscriberStop(
+    @MessageBody() subStopData: { deviceId: string }
+  ): Promise<void> {
+    await this.subscriberService.disconnectSubscriber(subStopData.deviceId);
   }
 }

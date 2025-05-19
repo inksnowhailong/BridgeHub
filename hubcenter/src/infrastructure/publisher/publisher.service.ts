@@ -20,7 +20,7 @@ import { DataSource } from 'typeorm';
 @Injectable()
 export class PublisherService extends PublisherRepositoryPgsql {
   constructor(
-    @Inject('SQLITE_DATA_SOURCE')
+    @Inject('PGSQL_DATA_SOURCE')
     private readonly dataSource: DataSource
   ) {
     super(dataSource.getRepository(PublisherEntity));

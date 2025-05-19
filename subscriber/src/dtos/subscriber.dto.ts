@@ -5,7 +5,7 @@
 export class SubscriberCreateDTO {
   constructor(
     /**订阅者的名字 */
-    public subscriberName: string,
+    public serverName: string,
     /**身份验证信息 */
     public authData: string,
     /**设备识别码 */

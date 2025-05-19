@@ -8,7 +8,7 @@ import { SubscriberStatus } from '../enum/subscriber.enum';
 export class SubscriberCreateParamsDTO {
   /**订阅者的名字 */
   @IsNotEmpty()
-  subscriberName: string;
+  serverName: string;
 
   /**身份验证信息 */
   @IsNotEmpty()
@@ -38,7 +38,7 @@ export class SubscriberUpdateParamsDTO {
 
   /**订阅者的名字 */
   @IsNotEmpty()
-  subscriberName: string;
+  serverName: string;
 
   /**身份验证信息 */
   @IsNotEmpty()
@@ -109,25 +109,21 @@ export class SubscriberStartDTO {
  * @description: 订阅关系参数
  */
 export class SubscriptionDTO {
-  /**订阅者ID */
-  @IsNotEmpty()
-  subscriberId: string;
-
-  /**发布者ID */
-  @IsNotEmpty()
   publisherId: string;
+  deviceId: string;
 
-  /**创建时间 */
-  @IsNotEmpty()
-  createdAt: number;
-
-  constructor(
-    subscriberId: string,
-    publisherId: string,
-    createdAt: number = Date.now()
-  ) {
-    this.subscriberId = subscriberId;
+  constructor(publisherId: string, deviceId: string) {
     this.publisherId = publisherId;
-    this.createdAt = createdAt;
+    this.deviceId = deviceId;
+  }
+}
+
+export class UnsubscriptionDTO {
+  publisherId: string;
+  deviceId: string;
+
+  constructor(publisherId: string, deviceId: string) {
+    this.publisherId = publisherId;
+    this.deviceId = deviceId;
   }
 }

@@ -40,11 +40,12 @@ export class Pagination {
    * @return {*}
    */
   createPaginationResult<T>(data: T): PaginationResult<T> {
-    return {
-      Pagination: this,
-      data
-    };
+    return new PaginationResult(data, this.totalCount, {
+      currentPage: this.currentPage,
+      pageSize: this.pageSize
+    });
   }
+
   // 可以增加一些辅助方法
   getOffset(): number {
     return (this.currentPage - 1) * this.pageSize;
@@ -55,6 +56,7 @@ export class Pagination {
     return !this.hasNextPage;
   }
 }
+
 /**
  * @description: 分页查询数据的参数
  * @return {*}
@@ -73,12 +75,22 @@ export class PaginationParams {
   @Transform(({ value }) => Number(value ?? 1))
   currentPage: number = 1;
 }
+
 /**
  * @description:数据转为包含分页数据的工具类型
  * @return {*}
  */
 
-export type PaginationResult<T> = {
-  Pagination: Pagination;
+export class PaginationResult<T> {
   data: T;
-};
+  pagination: Pagination;
+
+  constructor(data: T, total: number, params: PaginationParams) {
+    this.data = data;
+    this.pagination = new Pagination(
+      total,
+      params.pageSize,
+      params.currentPage
+    );
+  }
+}

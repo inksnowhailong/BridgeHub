@@ -9,7 +9,7 @@ export class SubscriberEntity {
 
   /**订阅者的名字 */
   @Column({ type: 'varchar', length: 255, unique: true })
-  subscriberName: string;
+  serverName: string;
 
   /**身份验证信息 */
   @Column({ type: 'varchar' })
@@ -20,7 +20,7 @@ export class SubscriberEntity {
   deviceId: string;
 
   /**订阅的发布者ID列表 */
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', default: '' })
   publisherIds: string;
 
   /**订阅者创建时间 */
@@ -32,7 +32,7 @@ export class SubscriberEntity {
   lastConnectedAt: number;
 
   /**订阅者的状态 */
-  @Column({ type: 'varchar', length: 64 })
+  @Column({ type: 'varchar', length: 64, default: SubscriberStatus.CLOSE })
   status: SubscriberStatus;
 
   /**自定义储存的数据 */
@@ -45,10 +45,10 @@ export class SubscriberEntity {
     Object.assign(
       this,
       {
-        subscriberName: '',
+        serverName: '',
         authData: '',
         deviceId: '',
-        publisherIds: '[]',
+        publisherIds: '',
         createdAt: 0,
         lastConnectedAt: 0,
         status: SubscriberStatus.CLOSE,

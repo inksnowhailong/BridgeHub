@@ -1,73 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Button, Space, Modal, Form, Input, Select, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { MessageType } from '../types/message';
-import { Websocket } from '../utils/websocket';
-
-interface Subscriber {
-  id: string;
-  serverName: string;
-  status: string;
-  deviceId: string;
-  serverType: string;
-  subscribedPublishers: string[];
-}
-
-// 模拟数据
-const mockSubscribers: Subscriber[] = [
-  {
-    id: '1',
-    serverName: '测试订阅者1',
-    status: 'active',
-    deviceId: 'DEVICE_001',
-    serverType: 'node',
-    subscribedPublishers: ['pub1', 'pub2']
-  },
-  {
-    id: '2',
-    serverName: '测试订阅者2',
-    status: 'connecting',
-    deviceId: 'DEVICE_002',
-    serverType: 'java',
-    subscribedPublishers: ['pub1']
-  },
-  {
-    id: '3',
-    serverName: '测试订阅者3',
-    status: 'disconnected',
-    deviceId: 'DEVICE_003',
-    serverType: 'python',
-    subscribedPublishers: ['pub2', 'pub3']
-  }
-];
-
-const mockPublishers = [
-  { id: 'pub1', serverName: '发布者1' },
-  { id: 'pub2', serverName: '发布者2' },
-  { id: 'pub3', serverName: '发布者3' }
-];
+import { SubscriberApi } from './api';
+import { SubscriberEntity, SubscriberCreateParamsDTO } from './entities';
+import { SubscriberStatus } from '../types/subscriber';
+import request from '@/utils/request';
+import { PaginationParams } from '@/common/abstract/Pagination.dto';
 
 const Subscribers: React.FC = () => {
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
-  const [publishers, setPublishers] = useState<Array<{ id: string; serverName: string }>>([]);
+  const Api = new SubscriberApi(request);
+  const [subscribers, setSubscribers] = useState<SubscriberEntity[]>([]);
+  const [publishers, setPublishers] = useState<any[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingSubscriber, setEditingSubscriber] = useState<Subscriber | null>(null);
+  const [editingSubscriber, setEditingSubscriber] = useState<SubscriberEntity | null>(null);
   const [form] = Form.useForm();
-  const [socket, setSocket] = useState<Websocket | null>(null);
+  const [pageParams, setPageParams] = useState<PaginationParams>({
+    pageSize: 10,
+    currentPage: 1,
+  });
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const getSubscriberList = async () => {
+    try {
+      setLoading(true);
+      const res = await Api.getSubscriberList(pageParams);
+      console.log(res);
+
+      if (res.code === 200 && res.data?.data?.data) {
+        setSubscribers(res.data.data.data);
+        setTotal(res.data.data.pagination?.totalCount || 0);
+      } else {
+        setSubscribers([]);
+        setTotal(0);
+      }
+    } catch (error) {
+      message.error('获取订阅者列表失败');
+      setSubscribers([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // 使用模拟数据
-    setSubscribers(mockSubscribers);
-    setPublishers(mockPublishers);
-
-    const wsServer = 'ws://localhost:3080';
-    const ws = new Websocket(wsServer);
-    setSocket(ws);
-
-    return () => {
-      ws.socket.disconnect();
-    };
-  }, []);
+    getSubscriberList();
+  }, [pageParams]);
 
   const handleCreate = () => {
     setEditingSubscriber(null);
@@ -75,59 +53,46 @@ const Subscribers: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleEdit = (record: Subscriber) => {
+  const handleEdit = (record: SubscriberEntity) => {
     setEditingSubscriber(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      ...record,
+      publisherIds: record.publisherIds ? record.publisherIds.split(',') : []
+    });
     setIsModalVisible(true);
   };
 
-  const handleDelete = (id: string) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: '确定要删除这个订阅者吗？',
-      onOk: () => {
-        socket?.emit('message', {
-          type: MessageType.SUBSCRIBER_DELETE,
-          data: { id },
-        }, (res: any) => {
-          if (res.success) {
-            message.success('删除成功');
-            setSubscribers(subscribers.filter(s => s.id !== id));
-          } else {
-            message.error(res.message);
-          }
-        });
-      },
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      await Api.deleteSubscriber(id);
+      message.success('删除成功');
+      getSubscriberList();
+    } catch (error) {
+      message.error('删除失败');
+    }
   };
 
-  const handleModalOk = () => {
-    form.validateFields().then(values => {
-      const messageType = editingSubscriber
-        ? MessageType.SUBSCRIBER_UPDATE
-        : MessageType.SUBSCRIBER_CREATE;
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+      const data: SubscriberCreateParamsDTO = {
+        ...values,
+        publisherIds: values.publisherIds || [],
+        customData: JSON.stringify({})
+      };
 
-      socket?.emit('message', {
-        type: messageType,
-        data: editingSubscriber ? { ...values, id: editingSubscriber.id } : values,
-      }, (res: any) => {
-        if (res.success) {
-          message.success(editingSubscriber ? '更新成功' : '创建成功');
-          setIsModalVisible(false);
-          // 刷新列表
-          socket?.emit('message', {
-            type: MessageType.SUBSCRIBER_LIST,
-            data: {},
-          }, (res: any) => {
-            if (res.data) {
-              setSubscribers(res.data);
-            }
-          });
-        } else {
-          message.error(res.message);
-        }
-      });
-    });
+      if (editingSubscriber) {
+        await Api.updateSubscriber({ ...data, id: editingSubscriber.id });
+        message.success('更新成功');
+      } else {
+        await Api.createSubscriber(data);
+        message.success('创建成功');
+      }
+      setIsModalVisible(false);
+      getSubscriberList();
+    } catch (error) {
+      message.error(editingSubscriber ? '更新失败' : '创建失败');
+    }
   };
 
   const columns = [
@@ -145,6 +110,14 @@ const Subscribers: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
+      render: (status: SubscriberStatus) => {
+        const statusMap = {
+          [SubscriberStatus.OPEN]: '已连接',
+          [SubscriberStatus.CLOSE]: '未连接',
+          [SubscriberStatus.DISABLE]: '已禁用'
+        };
+        return statusMap[status] || status;
+      }
     },
     {
       title: '设备ID',
@@ -152,20 +125,22 @@ const Subscribers: React.FC = () => {
       key: 'deviceId',
     },
     {
-      title: '服务类型',
-      dataIndex: 'serverType',
-      key: 'serverType',
-    },
-    {
       title: '订阅的发布者',
-      dataIndex: 'subscribedPublishers',
-      key: 'subscribedPublishers',
-      render: (publishers: string[]) => publishers.join(', '),
+      dataIndex: 'publisherIds',
+      key: 'publisherIds',
+      render: (publisherIds: string) => {
+        if (!publisherIds) return '-';
+        const ids = publisherIds.split(',');
+        return ids.map(id => {
+          const publisher = publishers.find(p => p.id === id);
+          return publisher ? publisher.serverName : id;
+        }).join(', ');
+      }
     },
     {
       title: '操作',
       key: 'action',
-      render: (_: any, record: Subscriber) => (
+      render: (_: any, record: SubscriberEntity) => (
         <Space>
           <Button
             type="primary"
@@ -200,6 +175,21 @@ const Subscribers: React.FC = () => {
         columns={columns}
         dataSource={subscribers}
         rowKey="id"
+        loading={loading}
+        pagination={{
+          total,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `共 ${total} 条`,
+          current: pageParams.currentPage,
+          pageSize: pageParams.pageSize,
+          onChange: (currentPage, pageSize) => {
+            setPageParams({
+              currentPage,
+              pageSize,
+            });
+          },
+        }}
       />
 
       <Modal
@@ -227,18 +217,14 @@ const Subscribers: React.FC = () => {
             <Input />
           </Form.Item>
           <Form.Item
-            name="serverType"
-            label="服务类型"
-            rules={[{ required: true, message: '请选择服务类型' }]}
+            name="authData"
+            label="认证信息"
+            rules={[{ required: true, message: '请输入认证信息' }]}
           >
-            <Select>
-              <Select.Option value="node">Node.js</Select.Option>
-              <Select.Option value="java">Java</Select.Option>
-              <Select.Option value="python">Python</Select.Option>
-            </Select>
+            <Input />
           </Form.Item>
           <Form.Item
-            name="subscribedPublishers"
+            name="publisherIds"
             label="订阅的发布者"
           >
             <Select mode="multiple">

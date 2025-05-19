@@ -2,7 +2,7 @@
   "name": "hub-subscriber-cli",
   "version": "1.0.0",
   "description": "订阅者",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "bin": {
     "sb": "./dist/index.js"
   },

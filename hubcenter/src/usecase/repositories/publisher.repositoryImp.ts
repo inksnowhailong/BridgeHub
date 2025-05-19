@@ -74,8 +74,8 @@ export class PublisherRepositoryPgsql extends PublisherRepository {
     });
     if (!publisher) throw new NotFoundException('找不到对应发布者设备ID');
 
-    if (publisher.authData !== authData)
-      throw new UnauthorizedException('身份验证失败');
+    // if (publisher.authData !== authData)
+    //   throw new UnauthorizedException('身份验证失败');
     return publisher;
   }
 

@@ -31,8 +31,8 @@ export abstract class SubscriberRepository {
    * @description: 根据订阅者名模糊查询订阅者
    * @return {*}
    */
-  abstract getSubscriberBySubscriberName(
-    subscriberName: string,
+  abstract getSubscriberByServerName(
+    serverName: string,
     pageParams: PaginationParams
   ): Promise<PaginationResult<SubscriberEntity[]>>;
 
